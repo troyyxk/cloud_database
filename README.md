@@ -23,6 +23,13 @@ Port numbers between 1024 and 65536 should be used (pick a random port to avoid 
  ```
 java -jar echoClient.jar
  ```
+Your prompt should change to:
+```
+EchoClient>
+```
+and that's all set. 
+
+You can play with it now.
 
 ## Milestone 1 Client and Persistent Storage Server
 Folder: M1
