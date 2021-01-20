@@ -6,6 +6,11 @@ In the echoSever folder, compile and build with:
  ```
  ant
  ```
+ Follow by the command bellow to run:
+ ```
+ java -jar echoClient.jar
+ ```
+ 
 
 ## Milestone 1 Client and Persistent Storage Server
 Folder: M1
