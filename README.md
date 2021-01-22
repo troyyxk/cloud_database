@@ -33,3 +33,25 @@ You can play with it now.
 
 ## Milestone 1 Client and Persistent Storage Server
 Folder: M1
+
+
+
+## Development Plan
+- Single threaded server client
+- Server accept multiple client (multithreading)
+- Client and server respond to message types
+  - get/put
+  - client accept server reply
+  - client deal with reply message status (KVMessage)
+- Dump to persistence storage
+  - r/w
+- Cache (LFU, LRU, FIFO)
+- Junit
+- Performance (Locust generating report?)
+
+### Jefferson
+
+### Troy
+
+### Junxuan
+
