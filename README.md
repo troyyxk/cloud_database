@@ -7,7 +7,7 @@ In the echoSever folder, compile and build with:
  ```
  ant
  ```
- Follow by the command bellow to run:
+ Follow by the command bellow to run
  ```
  java -jar echoServer.jar <port number>
  ```
