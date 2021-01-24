@@ -29,6 +29,8 @@ EchoClient>
 ```
 and that's all set. 
 
+Recommend address: 127.0.0.1
+
 You can play with it now.
 
 ## Milestone 1 Client and Persistent Storage Server
