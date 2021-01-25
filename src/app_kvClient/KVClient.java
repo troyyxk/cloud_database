@@ -78,30 +78,32 @@ public class KVClient implements IKVClient {
                 try {
                     int port = Integer.parseInt(args[2]);
                     this.newConnection(addr, port);
+                    printInfo("Connected to: " + addr + ":" + port);
                 }
 
                 catch (NumberFormatException e) {
-                    globalLogger.error("The port number should be an integer");
+                    printError("The port number should be an integer");
                 }
 
                 catch (Exception e) {
-                    globalLogger.error("Unknown host address error");
+                    printError("Unknown host address error");
                 }
 
             }
 
             else {
-                globalLogger.error("Invalid number of arguments for connect");
+                printError("Invalid number of arguments for connect");
             }
         }
 
         else if (option.trim().equals(CommandPhrase.DISCONNECT.value())) {
             if (args.length == 1) {
+                System.out.println("Disconnected from the current storage server");
                 this.storageConnection.disconnect();
             }
 
             else {
-                globalLogger.error("Invalid number of args when disconnecting");
+                printError("Invalid number of args when disconnecting");
             }
         }
 
@@ -115,7 +117,7 @@ public class KVClient implements IKVClient {
 
         else if (option.trim().equals(CommandPhrase.HELP.value())) {
             if (args.length != 1) {
-                globalLogger.error("No need to pass params to help command");
+                printError("No need to pass params to help command");
             }
 
             else {
@@ -157,7 +159,7 @@ public class KVClient implements IKVClient {
 
                 else {
                     isSuccessful = false;
-                    globalLogger.error("No such level option");
+                    printError("No such level option");
                 }
 
                 if (isSuccessful) {
@@ -166,7 +168,7 @@ public class KVClient implements IKVClient {
             }
 
             catch (IOException e) {
-                globalLogger.error("log level setting failed!");
+                printError("log level setting failed!");
             }
         }
 
@@ -189,17 +191,28 @@ public class KVClient implements IKVClient {
     }
 
     private void unknown_respond() {
-        System.out.println("Unknown Command");
+        printError("Unknown Command");
         printHelpText();
     }
 
     private void printHelpText() {
-        globalLogger.info("Command options: \n " +
-                "connect <server> <port>;\n" +
-                             "disconnect\n" +
-                "put <key> <value>\n" +
-                "get <key>\n" +
-                "help\n" +
-                "quit");
+        String helpText =":::::ms1-clinet help:::::: \n Command options: \n " +
+                "connect <server> <port>: connect to a server\n" +
+                "disconnect : disconnected from the current remote storage\n" +
+                "put <key> <value>: save to storage\n" +
+                "get <key>: get value from key\n" +
+                "help: get the man page\n" +
+                "quit: exit the program";
+        printInfo(helpText);
+    }
+
+    private void printInfo(String info) {
+        System.out.println(info);
+        globalLogger.info(info);
+    }
+
+    private void printError(String error) {
+        System.out.println(error);
+        globalLogger.error(error);
     }
 }
