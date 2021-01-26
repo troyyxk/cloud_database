@@ -85,8 +85,12 @@ public class KVClient implements IKVClient {
                     printError("The port number should be an integer");
                 }
 
+                catch (IOException e) {
+                    printError("Connection failed! Unknown host address error, please check addr and port number");
+                }
+
                 catch (Exception e) {
-                    printError("Unknown host address error");
+                    printError("Unknown error");
                 }
 
             }
