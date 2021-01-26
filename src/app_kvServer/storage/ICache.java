@@ -1,7 +1,5 @@
 package app_kvServer.storage;
 
-import app_kvServer.IStorage;
-
 public interface ICache extends IStorage {
     public enum CacheStrategy {
         None,
