@@ -61,6 +61,9 @@ public class KVStore implements KVCommInterface {
 	}
 
 	private synchronized void closeSocket() {
+
+		if (connWrapper == null) return;
+
 		try {
 			connWrapper.close();
 		}

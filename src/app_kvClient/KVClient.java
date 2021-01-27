@@ -206,7 +206,8 @@ public class KVClient implements IKVClient {
                 "put <key> <value>: save to storage\n" +
                 "get <key>: get value from key\n" +
                 "help: get the man page\n" +
-                "quit: exit the program";
+                "quit: exit the program" +
+                "loglevel <level>: ALL|DEBUG|INFO|WARN|ERROR|FATAL|OFF";
         printInfo(helpText);
     }
 
