@@ -31,7 +31,12 @@ public class ClientConnWrapper implements ConnWrapper {
     }
 
     @Override
-    public InputStream toChannel() {
+    public InputStream inChannel() {
         return this.inStream;
+    }
+
+    @Override
+    public OutputStream outChannel() {
+        return this.outStream;
     }
 }
