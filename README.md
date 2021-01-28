@@ -42,7 +42,9 @@ Folder: M1
   - Performance (Locust generating report?)
 
 ### Jefferson
+- Main (wheel)
 - Server accept multiple client (multithreading)
+- Logging (specify dir)
 - Cache (None, LFU, LRU, FIFO)
   - Strategy class
   - Cache size: 4096
@@ -50,22 +52,23 @@ Folder: M1
 
 ### Troy
 - Dump to persistence storage
-  - r/w
+  - read/write
   - Data Access Object
     - put(key, value)
         - write to a file (append to a file O(1))
     - get(key)
         - read from a file (scan the entire file line by line)
-    - exception class
-      - class keyNotFound extends Exception
     format:
-    key1, value1
-    key2, value2
+    key1,value1
+    key2,value2
+    scanner readline
 
 ### Junxuan
 - Single threaded server client
+- socket communication
 - message protocol design
 - Client and server accept messages
+- parse client/server message
 
 
 
