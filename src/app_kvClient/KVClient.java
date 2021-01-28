@@ -5,6 +5,7 @@ import client.KVStore;
 import logger.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -88,6 +89,10 @@ public class KVClient implements IKVClient {
 
                 catch (SocketTimeoutException e) {
                     printError("Connection failed! Server doesn't respond, please check new addr and port");
+                }
+
+                catch (JSONException | IllegalArgumentException e) {
+                    printError("Server returns invalid feedback!");
                 }
 
                 catch (IOException e) {
