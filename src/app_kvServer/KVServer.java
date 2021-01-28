@@ -29,6 +29,16 @@ public class KVServer extends Thread implements IKVServer {
 	private boolean running;
 	private DataAccessObject dao;
 
+	/**
+	 * For testing
+	 * @param port
+	 * @param cacheSize
+	 * @param strategy
+	 */
+	public KVServer(int port, int cacheSize, String strategy) {
+		this.port = port;
+		this.dao = new DataAccessObject(cacheSize, strategy);
+	}
 
 	/**
 	 * Start KV Server at given port
