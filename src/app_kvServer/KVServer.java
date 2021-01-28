@@ -8,6 +8,17 @@ import logger.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import client.ClientConnWrapper;
+import shared.CommunicationTextMessageHandler;
+import shared.ConnWrapper;
+import shared.messages.KVMessageModel;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import shared.messages.KVMessage;
+
 
 public class KVServer extends Thread implements IKVServer {
 
@@ -30,21 +41,33 @@ public class KVServer extends Thread implements IKVServer {
 		this.dao = new DataAccessObject(cacheSize, strategy);
 	}
 
-	/**
-	 * Start KV Server at given port
-	 * @param port given port for storage server to operate
-	 * @param cacheSize specifies how many key-value pairs the server is allowed
-	 *           to keep in-memory
-	 * @param strategy specifies the cache replacement strategy in case the cache
-	 *           is full and there is a GET- or PUT-request on a key that is
-	 *           currently not contained in the cache. Options are "FIFO", "LRU",
-	 *           and "LFU".
-	 */
-	public KVServer(int port, int cacheSize, String strategy) {
-		this.port = port;
-		this.dao = new DataAccessObject(cacheSize, strategy);
+	public static void main(String[] args) {
+		int test_port = 5050;
+		System.out.println("server started!");
+		boolean running = true;
+		ServerSocket test_socket;
+		try {
+			test_socket = new ServerSocket(5050);
+		}
+
+		catch (IOException e) {
+			return;
+		}
+		while (running) {
+			try {
+				Socket client = test_socket.accept();
+				ConnWrapper wrapper = new ClientConnWrapper(client);
+				CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(wrapper);
+				KVMessageModel msg = new KVMessageModel();
+				msg.setStatusType(KVMessage.StatusType.GET_SUCCESS);
+				msg.setKey("status");
+				msg.setValue("GET_SUCCESS");
+				handler.sendMsg(msg);
+			}
+			catch (IOException e) {
+			}
+		}
 	}
-	
 	@Override
 	public int getPort(){
 		return port;
@@ -151,4 +174,8 @@ public class KVServer extends Thread implements IKVServer {
 		}
 	}
 
+	@Override
+    public void close(){
+		// TODO Auto-generated method stuisrunningb
+	}
 }
