@@ -4,18 +4,6 @@ import java.io.Serializable;
 
 public class KVMessageModel implements KVMessage, Serializable {
 
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public void setStatusType(StatusType statusType) {
-        this.statusType = statusType;
-    }
-
     private String key;
     private String value;
     private StatusType statusType;
@@ -33,5 +21,17 @@ public class KVMessageModel implements KVMessage, Serializable {
     @Override
     public StatusType getStatus() {
         return this.statusType;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public void setStatusType(StatusType statusType) {
+        this.statusType = statusType;
     }
 }

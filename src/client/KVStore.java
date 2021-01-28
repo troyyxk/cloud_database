@@ -52,7 +52,6 @@ public class KVStore implements KVCommInterface {
 
 			else {
 				printError("Connection might have been possessed or some server internal errors, please try again");
-				closeSocket();
 			}
 
 		}

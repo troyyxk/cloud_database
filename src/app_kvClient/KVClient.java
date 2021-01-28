@@ -9,6 +9,7 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
@@ -77,7 +78,7 @@ public class KVClient implements IKVClient {
         else if (option.trim().equals(CommandPhrase.CONNECT.value())) {
             if (args.length == 3) {
                 String addr = args[1];
-                try {
+               try {
                     int port = Integer.parseInt(args[2]);
                     this.newConnection(addr, port);
                     printInfo("Connected to: " + addr + ":" + port);
@@ -95,8 +96,12 @@ public class KVClient implements IKVClient {
                     printError("Server returns invalid feedback!");
                 }
 
-                catch (IOException e) {
+                catch (UnknownHostException e) {
                     printError("Connection failed! Unknown host address error, please check addr and port number");
+                }
+
+                catch (IOException e) {
+                    printError("Connection failed! Server refused connection please check addr and port number");
                 }
 
                 catch (Exception e) {

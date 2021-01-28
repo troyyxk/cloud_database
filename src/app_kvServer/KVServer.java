@@ -1,5 +1,16 @@
 package app_kvServer;
 
+import client.ClientConnWrapper;
+import shared.CommunicationTextMessageHandler;
+import shared.ConnWrapper;
+import shared.messages.KVMessageModel;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import shared.messages.KVMessage;
+
 public class KVServer implements IKVServer {
 	/**
 	 * Start KV Server at given port
@@ -14,7 +25,34 @@ public class KVServer implements IKVServer {
 	public KVServer(int port, int cacheSize, String strategy) {
 		// TODO Auto-generated method stub
 	}
-	
+
+	public static void main(String[] args) {
+		int test_port = 5050;
+		System.out.println("server started!");
+		boolean running = true;
+		ServerSocket test_socket;
+		try {
+			test_socket = new ServerSocket(5050);
+		}
+
+		catch (IOException e) {
+			return;
+		}
+		while (running) {
+			try {
+				Socket client = test_socket.accept();
+				ConnWrapper wrapper = new ClientConnWrapper(client);
+				CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(wrapper);
+				KVMessageModel msg = new KVMessageModel();
+				msg.setStatusType(KVMessage.StatusType.GET_SUCCESS);
+				msg.setKey("status");
+				msg.setValue("GET_SUCCESS");
+				handler.sendMsg(msg);
+			}
+			catch (IOException e) {
+			}
+		}
+	}
 	@Override
 	public int getPort(){
 		// TODO Auto-generated method stub
