@@ -11,15 +11,14 @@ public interface IStorage {
     /**
      * Get the value associated with the key
      * @return  value associated with key
-     * @throws Exception
+     * @throws KeyNotFoundException
      *      when key not in the key range of the server
      */
     public String getKV(String key) throws Exception;
 
     /**
      * Put the key-value pair into storage
-     * @throws Exception
-     *      when key not in the key range of the server
+     * @throws StorageFullException
      */
     public void putKV(String key, String value) throws Exception;
 
@@ -27,5 +26,10 @@ public interface IStorage {
      * Clear the storage of the server
      */
     public void clear();
+
+    /**
+     * Delete a specific key
+     */
+    public void delete(String key);
 
 }

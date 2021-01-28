@@ -1,13 +1,27 @@
 package app_kvServer;
 import app_kvServer.storage.*;
+import app_kvServer.storage.cache.*;
+import app_kvServer.storage.persistence.IPersistence;
 
 public class DataAccessObject implements IStorage {
     // TODO should be static
-    private static ICache cache;
-    private IStorage disk;
+    private ICache cache;
+    private IPersistence disk;
 
     public DataAccessObject(int cacheSize, String strategy) {
-        this.cache = new Cache(cacheSize, strategy);
+        switch (strategy) {
+            case "LRU":
+                this.cache = new FIFOCache(cacheSize);
+                break;
+            case "LFU":
+                this.cache = new LFUCache(cacheSize);
+                break;
+            case "FIFO":
+                this.cache = new LRUCache(cacheSize);
+                break;
+            default:
+                this.cache = null;
+        }
         // TODO implement persistence layer
     }
 
@@ -38,5 +52,10 @@ public class DataAccessObject implements IStorage {
     public void clear() {
         this.cache.clear();
         this.disk.clear();
+    }
+
+    @Override
+    public void delete(String key) {
+
     }
 }
