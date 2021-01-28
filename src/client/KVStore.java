@@ -71,13 +71,27 @@ public class KVStore implements KVCommInterface {
 	@Override
 	public KVMessage put(String key, String value) throws Exception {
 		// TODO Auto-generated method stub
+		if (this.connWrapper == null) {
+			throw new IOException();
+		}
 
-		return null;
+		KVMessageModel kvMsg = new KVMessageModel();
+		kvMsg.setStatusType(KVMessage.StatusType.PUT);
+		kvMsg.setKey(key);
+		kvMsg.setValue(value);
+		CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
+		handler.sendMsg(kvMsg);
+		KVMessage res = handler.getKVMsg();
+
+		return res;
 	}
 
 	@Override
 	public KVMessage get(String key) throws Exception {
 		// TODO Auto-generated method stub
+		if (this.connWrapper == null) {
+			throw new IOException();
+		}
 		KVMessageModel kvMsg = new KVMessageModel();
 		kvMsg.setKey(key);
 		kvMsg.setStatusType(KVMessage.StatusType.GET);
