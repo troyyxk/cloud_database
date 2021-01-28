@@ -4,7 +4,7 @@ public enum CommandPhrase {
 
     CONNECT("connect"),
     PUT("put"),
-    LOG_LEVEL("logLevel"),
+    LOG_LEVEL("loglevel"),
     HELP("help"),
     GET("get"),
     DISCONNECT("disconnect"),

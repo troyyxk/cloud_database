@@ -7,6 +7,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
@@ -29,7 +30,7 @@ public class KVClient implements IKVClient {
 
     private KVStore storageConnection;
     @Override
-    public void newConnection(String hostname, int port) throws Exception{
+    public void newConnection(String hostname, int port) throws SocketTimeoutException, Exception{
         // TODO Auto-generated method stub=
         // if there's already a connection, disconnect
         if (this.storageConnection != null) {
@@ -85,6 +86,10 @@ public class KVClient implements IKVClient {
                     printError("The port number should be an integer");
                 }
 
+                catch (SocketTimeoutException e) {
+                    printError("Connection failed! Server doesn't respond, please check new addr and port");
+                }
+
                 catch (IOException e) {
                     printError("Connection failed! Unknown host address error, please check addr and port number");
                 }
@@ -102,8 +107,8 @@ public class KVClient implements IKVClient {
 
         else if (option.trim().equals(CommandPhrase.DISCONNECT.value())) {
             if (args.length == 1) {
-                System.out.println("Disconnected from the current storage server");
                 this.storageConnection.disconnect();
+                System.out.println("Disconnected from the current storage server");
             }
 
             else {
@@ -130,6 +135,10 @@ public class KVClient implements IKVClient {
         }
 
         else if (option.trim().equals(CommandPhrase.LOG_LEVEL.value())) {
+            if (args.length != 2) {
+                printError("Invalid number of arguments");
+                return;
+            }
             String level = args[1];
             boolean isSuccessful = true;
             try {
@@ -163,7 +172,7 @@ public class KVClient implements IKVClient {
 
                 else {
                     isSuccessful = false;
-                    printError("No such level option");
+                    printError("No such level option: only ALL|DEBUG|INFO|WARN|ERROR|FATAL|OFF");
                 }
 
                 if (isSuccessful) {
@@ -206,7 +215,7 @@ public class KVClient implements IKVClient {
                 "put <key> <value>: save to storage\n" +
                 "get <key>: get value from key\n" +
                 "help: get the man page\n" +
-                "quit: exit the program" +
+                "quit: exit the program\n" +
                 "loglevel <level>: ALL|DEBUG|INFO|WARN|ERROR|FATAL|OFF";
         printInfo(helpText);
     }

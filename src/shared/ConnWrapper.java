@@ -6,7 +6,7 @@ import java.io.OutputStream;
 
 public interface ConnWrapper {
     void close() throws IOException;
-    boolean isValid();
+    boolean isValid() throws IOException;
     InputStream inChannel();
     OutputStream outChannel();
 }

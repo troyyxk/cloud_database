@@ -11,11 +11,18 @@ public class ClientConnWrapper implements ConnWrapper {
     private Socket rawSocket;
     private InputStream inStream;
     private OutputStream outStream;
+    private static final int TIME_WAIT = 1000;
 
     public ClientConnWrapper(Socket rawSocket) throws IOException {
         this.rawSocket = rawSocket;
-        this.inStream = rawSocket.getInputStream();
-        this.outStream = rawSocket.getOutputStream();
+        if (isValid()) {
+            this.inStream = rawSocket.getInputStream();
+            this.outStream = rawSocket.getOutputStream();
+        }
+
+        else {
+            this.rawSocket = null;
+        }
     }
     @Override
     public void close() throws IOException {
@@ -26,8 +33,12 @@ public class ClientConnWrapper implements ConnWrapper {
     }
 
     @Override
-    public boolean isValid() {
-        return rawSocket != null;
+    public boolean isValid() throws IOException {
+        if(rawSocket == null) {
+            return false;
+        }
+        boolean isV = this.rawSocket.getInetAddress().isReachable(TIME_WAIT);
+        return isV;
     }
 
     @Override

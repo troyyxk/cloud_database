@@ -1,10 +1,13 @@
 package client;
 
 import org.apache.log4j.Logger;
+import shared.CommunicationSockMessageHandler;
 import shared.messages.KVMessage;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -14,6 +17,7 @@ public class KVStore implements KVCommInterface {
 	private String targetAddress;
 	private int port;
 	private ClientConnWrapper connWrapper = null;
+	private static final int FINAL_TIMEOUT = 1_0000;
 	/**
 	 * Initialize KVStore with address and port of KVServer
 	 * @param address the address of the KVServer
@@ -32,9 +36,21 @@ public class KVStore implements KVCommInterface {
 		if (this.connWrapper != null) {
 			closeSocket();
 		}
-		Socket newSocket = new Socket(this.targetAddress, this.port);
+		System.out.println("connecting...");
+		Socket newSocket = new Socket();
+		newSocket.setSoTimeout(FINAL_TIMEOUT);
+		newSocket.connect(new InetSocketAddress(this.targetAddress, this.port), FINAL_TIMEOUT);
 		this.connWrapper = new ClientConnWrapper(newSocket);
-		printInfo("Storage successfully connected to " + this.targetAddress + ":" + port);
+		if (this.connWrapper.isValid()) {
+			CommunicationSockMessageHandler handler = new CommunicationSockMessageHandler(this.connWrapper);
+			String msg = handler.getMsg();
+			printInfo("Successfully get from server: " + msg);
+			printInfo("Storage successfully connected to " + this.targetAddress + ":" + port);
+		}
+
+		else {
+			printError("Connection is invalid!");
+		}
 	}
 
 	@Override
@@ -58,6 +74,11 @@ public class KVStore implements KVCommInterface {
 	private void printInfo(String info) {
 		System.out.println(info);
 		globalLogger.info(info);
+	}
+
+	private void printError(String err) {
+		System.out.println(err);
+		globalLogger.error(err);
 	}
 
 	private synchronized void closeSocket() {
