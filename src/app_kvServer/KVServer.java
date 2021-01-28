@@ -173,9 +173,4 @@ public class KVServer extends Thread implements IKVServer {
 			System.exit(1);
 		}
 	}
-
-	@Override
-    public void close(){
-		// TODO Auto-generated method stuisrunningb
-	}
 }
