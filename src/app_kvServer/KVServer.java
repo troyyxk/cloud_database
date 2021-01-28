@@ -1,9 +1,7 @@
 package app_kvServer;
 
 import java.io.IOException;
-import java.net.BindException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 
 import logger.LogSetup;
 
@@ -53,12 +51,18 @@ public class KVServer extends Thread implements IKVServer {
 	}
 
 	@Override
-    public String getHostname(){
-		String hostname = System.getenv("HOSTNAME");
-		if (hostname == null) {
-			hostname = "NullHostName";
+    public String getHostname() {
+		try {
+			return InetAddress.getLocalHost().toString();
+		} catch (UnknownHostException e) {
+			logger.error("Error! " +
+					"Unable to get hostname. \n", e);
+			String hostname = System.getenv("HOSTNAME");
+			if (hostname == null) {
+				hostname = "NullHostName";
+			}
+			return hostname;
 		}
-		return hostname;
 	}
 
 	@Override
