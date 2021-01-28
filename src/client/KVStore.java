@@ -2,6 +2,7 @@ package client;
 
 import org.apache.log4j.Logger;
 import shared.CommunicationSockMessageHandler;
+import shared.CommunicationTextMessageHandler;
 import shared.messages.KVMessage;
 
 import java.io.IOException;
@@ -42,10 +43,18 @@ public class KVStore implements KVCommInterface {
 		newSocket.connect(new InetSocketAddress(this.targetAddress, this.port), FINAL_TIMEOUT);
 		this.connWrapper = new ClientConnWrapper(newSocket);
 		if (this.connWrapper.isValid()) {
-			CommunicationSockMessageHandler handler = new CommunicationSockMessageHandler(this.connWrapper);
-			String msg = handler.getMsg();
-			printInfo("Successfully get from server: " + msg);
-			printInfo("Storage successfully connected to " + this.targetAddress + ":" + port);
+			CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
+			KVMessage message = handler.getKVMsg();
+			if (message.getStatus().toString().equals(KVMessage.StatusType.GET.toString())) {
+				printInfo("Successfully get from server: " + message.getKey() + ": " + message.getValue());
+				printInfo("Storage successfully connected to " + this.targetAddress + ":" + port);
+			}
+
+			else {
+				printError("Connection might have been possessed or some server internal errors, please try again");
+				closeSocket();
+			}
+
 		}
 
 		else {
