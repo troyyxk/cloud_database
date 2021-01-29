@@ -46,7 +46,7 @@ public class KVStore implements KVCommInterface {
 		if (this.connWrapper.isValid()) {
 			CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
 			KVMessage message = handler.getKVMsg();
-			if (message.getStatus().toString().equals(KVMessage.StatusType.GET.toString())) {
+			if (message.getStatus().toString().equals(KVMessage.StatusType.GET_SUCCESS.toString())) {
 				printInfo("Successfully get from server: " + message.getKey() + ": " + message.getValue());
 				printInfo("Storage successfully connected to " + this.targetAddress + ":" + port);
 			}
