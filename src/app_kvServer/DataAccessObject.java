@@ -15,9 +15,10 @@ public class DataAccessObject {
     public DataAccessObject(int cacheSize, String strategy){
         switch (strategy) {
             case "LRU":
-                this.cache = new FIFOCache(cacheSize);
+                this.cache = new LRUCache(cacheSize);
                 break;
             case "LFU":
+                // LFU cache not fully functional
                 this.cache = new FIFOCache(cacheSize);
                 break;
             case "FIFO":

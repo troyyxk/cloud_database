@@ -11,7 +11,7 @@ import org.junit.Test;
 public class DAOTest extends TestCase{
     private DataAccessObject dao;
     private int cacheSize = 1000;
-    private String strategy = "NONE";
+    private String strategy = "FIFO";
 
     @BeforeClass
     public void setUp() throws Exception {
