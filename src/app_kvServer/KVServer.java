@@ -1,17 +1,9 @@
 package app_kvServer;
-
 import java.io.IOException;
 import java.net.*;
-
-import app_kvServer.storage.cache.FIFOCache;
-import app_kvServer.storage.cache.LFUCache;
-import app_kvServer.storage.cache.LRUCache;
 import logger.LogSetup;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import app_kvServer.storage.cache.ICache;
-
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -30,9 +22,9 @@ public class KVServer extends Thread implements IKVServer {
 
 	/**
 	 * For testing
-	 * @param port
-	 * @param cacheSize
-	 * @param strategy
+	 * @param port port of Server
+	 * @param cacheSize cache size of cache
+	 * @param strategy strategies of cache, e.g. LRU, FIFO, etc
 	 */
 	public KVServer(int port, int cacheSize, String strategy) {
 		this.port = port;

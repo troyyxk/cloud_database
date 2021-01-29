@@ -9,7 +9,9 @@ import app_kvServer.storage.persistence.IPersistence;
 
 import org.json.*;
 
-
+/**
+ * A persistence storage implemented using JSON libraries
+ */
 public class PStore implements IPersistence {
     private String fileAddress;
     public PStore(String fileAddress) {

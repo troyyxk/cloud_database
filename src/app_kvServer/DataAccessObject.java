@@ -7,6 +7,12 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
+/**
+ * Data access layer for ClientConnection controller,
+ * one instance per server, acts as hybrid data store
+ * for both cache and disk. Contains logic to sync
+ * between cache and disk.
+ */
 public class DataAccessObject {
     private ICache cache;
     private IPersistence disk;
