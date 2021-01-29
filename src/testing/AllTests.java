@@ -29,6 +29,7 @@ public class AllTests {
 		clientSuite.addTestSuite(AdditionalTest.class);
 		clientSuite.addTestSuite(PStoreTest.class);
 		clientSuite.addTestSuite(FIFOCacheTest.class);
+		clientSuite.addTestSuite(LRUCacheTest.class);
 		clientSuite.addTestSuite(DAOTest.class);
 		clientSuite.addTestSuite(CommandLineTest.class);
 		return clientSuite;

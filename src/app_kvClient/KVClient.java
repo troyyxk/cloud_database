@@ -33,7 +33,6 @@ public class KVClient implements IKVClient {
     private KVStore storageConnection;
     @Override
     public void newConnection(String hostname, int port) throws SocketTimeoutException, Exception{
-        // TODO Auto-generated method stub=
         // if there's already a connection, disconnect
         if (this.storageConnection != null) {
             this.storageConnection.disconnect();
@@ -44,7 +43,6 @@ public class KVClient implements IKVClient {
 
     @Override
     public KVCommInterface getStore(){
-        // TODO Auto-generated method stub
         return this.storageConnection;
     }
 

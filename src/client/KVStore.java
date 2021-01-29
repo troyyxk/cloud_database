@@ -26,7 +26,6 @@ public class KVStore implements KVCommInterface {
 	 * @param port the port of the KVServer
 	 */
 	public KVStore(String address, int port) {
-		// TODO Auto-generated method stub
 		this.targetAddress = address;
 		this.port = port;
 		globalLogger.info("New KvStore: " + address + ":"+ port + ">");
@@ -34,7 +33,6 @@ public class KVStore implements KVCommInterface {
 
 	@Override
 	public void connect() throws IOException, Exception {
-		// TODO Auto-generated method stub
 		if (this.connWrapper != null) {
 			closeSocket();
 		}
@@ -64,13 +62,11 @@ public class KVStore implements KVCommInterface {
 
 	@Override
 	public void disconnect() {
-		// TODO Auto-generated method stub
 		closeSocket();
 	}
 
 	@Override
 	public KVMessage put(String key, String value) throws Exception {
-		// TODO Auto-generated method stub
 		if (this.connWrapper == null) {
 			throw new IOException();
 		}
@@ -87,7 +83,6 @@ public class KVStore implements KVCommInterface {
 
 	@Override
 	public KVMessage get(String key) throws Exception {
-		// TODO Auto-generated method stub
 		if (this.connWrapper == null) {
 			throw new IOException();
 		}
