@@ -10,6 +10,14 @@ public class PStore{
     private static String fileAddress = "./PStore.txt";
     private static String delimiter = ",";
 
+
+    public static boolean contains(String key){
+        int loc = find_loc(key);
+        if (loc < 0 ) {
+            return false;
+        }
+        return true;
+    }
     /**
      * Check if key is in storage
      * -1 for not found
@@ -17,7 +25,7 @@ public class PStore{
      * @param key
      * @return byte location of the key
      */
-    public static int contain(String key){
+    public static int find_loc(String key){
         File store = new File(fileAddress);
         // check if file does not exist
         if (!(store.exists())) {
@@ -96,7 +104,7 @@ public class PStore{
             }
         }
         // delete the og from file
-        int loc = contain(key);
+        int loc = find_loc(key);
         if (loc >= 0){
             out.println(loc);
             try {
