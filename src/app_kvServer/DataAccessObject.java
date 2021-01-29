@@ -48,10 +48,17 @@ public class DataAccessObject implements IStorage {
         // TODO put value into persistence
     }
 
-    @Override
-    public void clear() {
-        this.cache.clear();
-        this.disk.clear();
+    public void clearStorage() {
+        try {
+            this.disk.clearStorage();
+        } catch (Exception ex) {
+
+        }
+
+    }
+
+    public void clearCache() {
+
     }
 
     @Override

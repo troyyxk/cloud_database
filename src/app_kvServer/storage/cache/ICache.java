@@ -37,6 +37,7 @@ public interface ICache extends IStorage {
         }
     }
 
+
     /**
      * Get the cache strategy of the server
      * @return  cache strategy
@@ -48,6 +49,12 @@ public interface ICache extends IStorage {
      * @return  cache size
      */
     public int getCacheSize();
+
+
+    /**
+     * Clear Cache
+     */
+    public void clear();
 
     /**
      * Nominate a key for eviction to cache strategy

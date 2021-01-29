@@ -19,6 +19,11 @@ public class FIFOCacheTest extends TestCase{
         cache = new FIFOCache(cacheSize);
     }
 
+    @After
+    public void tearDown() {
+        cache.clear();
+    }
+
     @Test
     public void testPutShouldContain() {
         String key = "key";
@@ -50,7 +55,6 @@ public class FIFOCacheTest extends TestCase{
 
     @Test
     public void testClearShouldEmpty() {
-
         Exception e = null;
         try {
             for (int i = 0; i < cacheSize; i++) {
@@ -64,6 +68,17 @@ public class FIFOCacheTest extends TestCase{
             e = ex;
         }
         assertNull(e);
+    }
+
+    @Test
+    public void testDeleteFromEmptyShouldThrowException() {
+        Exception e = null;
+        try {
+            cache.delete("ECE419");
+        } catch (Exception ex) {
+            e = ex;
+        }
+        assertNotNull(e);
     }
 
     @Test
@@ -112,7 +127,7 @@ public class FIFOCacheTest extends TestCase{
     }
 
     @Test
-    public void testEvictShouldReturnLastMember() {
+    public void testEvictShouldReturnFirstMember() {
         Exception e = null;
         try {
             for (int i = 0; i < cacheSize; i++) {
@@ -173,12 +188,6 @@ public class FIFOCacheTest extends TestCase{
         }
         assertNotNull(e);
     }
-
-    @After
-    public void tearDown() {
-        cache.clear();
-    }
-
 
 
 }

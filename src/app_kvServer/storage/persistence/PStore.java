@@ -11,12 +11,12 @@ import static java.lang.System.out;
 
 
 /**
- * A persistence storage class.
- * Put takes O(1) and Get takes O(n).
+ * A persistence storage class,
+ * Put takes O(1) and Get takes O(n)
  */
 public class PStore implements IPersistence {
-    private String fileAddress;
-    private String delimiter = ",";
+    private final String fileAddress;
+    private final String delimiter = ",";
 
     private static Logger logger = Logger.getRootLogger();
 
