@@ -11,7 +11,7 @@ public class PStore{
     private static String delimiter = ",";
 
 
-    public static boolean contain(String key){
+    public static boolean contains(String key){
         int loc = find_loc(key);
         if (loc < 0 ) {
             return false;
