@@ -1,12 +1,14 @@
 package client;
 
+import app_kvServer.storage.persistence.IPersistence;
+
 import java.io.*;
 import java.util.*;
 
 import static java.lang.System.exit;
 import static java.lang.System.out;
 
-public class PStore{
+public class PStore implements IPersistence {
     private static String fileAddress = "./PStore.txt";
     private static String delimiter = ",";
 
