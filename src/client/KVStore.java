@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import shared.CommunicationSockMessageHandler;
 import shared.CommunicationTextMessageHandler;
 import shared.messages.KVMessage;
+import shared.messages.KVMessageModel;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -70,13 +71,34 @@ public class KVStore implements KVCommInterface {
 	@Override
 	public KVMessage put(String key, String value) throws Exception {
 		// TODO Auto-generated method stub
-		return null;
+		if (this.connWrapper == null) {
+			throw new IOException();
+		}
+		KVMessageModel kvMsg = new KVMessageModel();
+		kvMsg.setStatusType(KVMessage.StatusType.PUT);
+		kvMsg.setKey(key);
+		kvMsg.setValue(value);
+		CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
+		handler.sendMsg(kvMsg);
+		KVMessage res = handler.getKVMsg();
+
+		return res;
 	}
 
 	@Override
 	public KVMessage get(String key) throws Exception {
 		// TODO Auto-generated method stub
-		return null;
+		if (this.connWrapper == null) {
+			throw new IOException();
+		}
+		KVMessageModel kvMsg = new KVMessageModel();
+		kvMsg.setKey(key);
+		kvMsg.setValue("null");
+		kvMsg.setStatusType(KVMessage.StatusType.GET);
+		CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
+		handler.sendMsg(kvMsg);
+		KVMessage res = handler.getKVMsg();
+		return res;
 	}
 
 	private void printInfo(String info) {
