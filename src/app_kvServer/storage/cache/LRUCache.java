@@ -3,14 +3,10 @@ package app_kvServer.storage.cache;
 import app_kvServer.storage.KeyNotFoundException;
 import app_kvServer.storage.StorageFullException;
 
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class LRUCache implements ICache{
+public class LRUCache implements ICache {
     private int cacheSize;
     private Map<String, LinkedNode> map;
     /**
@@ -80,7 +76,7 @@ public class LRUCache implements ICache{
     }
 
     @Override
-    public void clear() {
+    public void clearCache() {
         head.next = tail;
         tail.prev = head;
         map.clear();

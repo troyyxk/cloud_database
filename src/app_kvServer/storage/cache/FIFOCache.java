@@ -3,12 +3,8 @@ package app_kvServer.storage.cache;
 import app_kvServer.storage.KeyNotFoundException;
 import app_kvServer.storage.StorageFullException;
 
-import java.util.Deque;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class FIFOCache implements ICache {
     private int cacheSize;
@@ -75,7 +71,7 @@ public class FIFOCache implements ICache {
     }
 
     @Override
-    public void clear() {
+    public void clearCache() {
         head.next = tail;
         tail.prev = head;
         map.clear();
