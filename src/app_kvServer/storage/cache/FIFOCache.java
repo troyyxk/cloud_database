@@ -36,7 +36,7 @@ public class FIFOCache implements ICache {
 
     @Override
     public int getCacheSize() {
-        return this.cacheSize;
+        return this.map.size();
     }
 
     @Override

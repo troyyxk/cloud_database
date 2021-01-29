@@ -50,7 +50,7 @@ public class LFUCache implements ICache {
 
     @Override
     public int getCacheSize() {
-        return this.cacheSize;
+        return this.keyMap.size();
     }
 
     @Override
