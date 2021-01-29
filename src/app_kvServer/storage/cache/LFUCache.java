@@ -1,5 +1,6 @@
 package app_kvServer.storage.cache;
 
+import app_kvServer.IKVServer;
 import app_kvServer.storage.KeyNotFoundException;
 import app_kvServer.storage.StorageFullException;
 
@@ -43,8 +44,8 @@ public class LFUCache implements ICache {
         this.keyMap = new ConcurrentHashMap<>();
     }
     @Override
-    public CacheStrategy getCacheStrategy() {
-        return CacheStrategy.LFU;
+    public IKVServer.CacheStrategy getCacheStrategy() {
+        return IKVServer.CacheStrategy.LFU;
     }
 
     @Override

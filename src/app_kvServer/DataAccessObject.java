@@ -7,12 +7,12 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
-public class DataAccessObject implements IStorage {
+public class DataAccessObject {
     private ICache cache;
     private IPersistence disk;
     private static Logger logger = Logger.getRootLogger();
 
-    public DataAccessObject(int cacheSize, String strategy) {
+    public DataAccessObject(int cacheSize, String strategy){
         switch (strategy) {
             case "LRU":
                 this.cache = new FIFOCache(cacheSize);
@@ -29,7 +29,7 @@ public class DataAccessObject implements IStorage {
         this.disk = new PStore("./db.json");
     }
 
-    @Override
+
     public boolean contains(String key) {
         if (hasCache()) {
             return this.cache.contains(key) || this.disk.contains(key);
@@ -39,7 +39,7 @@ public class DataAccessObject implements IStorage {
 
     }
 
-    @Override
+
     public String getKV(String key) throws KeyNotFoundException {
         if (hasCache()) {
             try {
@@ -65,7 +65,7 @@ public class DataAccessObject implements IStorage {
         return value;
     }
 
-    @Override
+
     public void putKV(String key, String value) throws Exception {
         if (!hasCache()) {
             try {
@@ -152,7 +152,7 @@ public class DataAccessObject implements IStorage {
 
     }
 
-    @Override
+
     public void delete(String key) throws IOException {
         if (!contains(key)) {
             logger.error("Attemping to delete non-existing key: " + key);
@@ -186,11 +186,11 @@ public class DataAccessObject implements IStorage {
      * Get the cache strategy of the server
      * @return  cache strategy
      */
-    public ICache.CacheStrategy getCacheStrategy() {
+    public IKVServer.CacheStrategy getCacheStrategy() {
         if (hasCache()) {
             return cache.getCacheStrategy();
         } else {
-            return ICache.CacheStrategy.None;
+            return IKVServer.CacheStrategy.None;
         }
     }
 
@@ -204,6 +204,28 @@ public class DataAccessObject implements IStorage {
         } else {
             // 0 representing no cache
             return 0;
+        }
+    }
+
+    public boolean inStorage(String key) {
+        return disk.contains(key);
+    }
+
+    public boolean inCache(String key) {
+        return cache.contains(key);
+    }
+
+    public void flush() {
+        while (!cache.isEmpty()) {
+            try {
+                String key = cache.evict();
+                String value = cache.getKV(key);
+                disk.putKV(key, value);
+                cache.delete(key);
+            } catch (Exception ex) {
+                logger.error("Unable to flush all cache data into disk");
+                break;
+            }
         }
     }
 

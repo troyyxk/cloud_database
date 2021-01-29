@@ -1,5 +1,6 @@
 package app_kvServer.storage.cache;
 
+import app_kvServer.IKVServer;
 import app_kvServer.storage.KeyNotFoundException;
 import app_kvServer.storage.StorageFullException;
 
@@ -29,8 +30,8 @@ public class FIFOCache implements ICache {
     }
 
     @Override
-    public CacheStrategy getCacheStrategy() {
-        return CacheStrategy.FIFO;
+    public IKVServer.CacheStrategy getCacheStrategy() {
+        return IKVServer.CacheStrategy.FIFO;
     }
 
     @Override
