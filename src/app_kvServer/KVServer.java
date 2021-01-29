@@ -3,10 +3,14 @@ package app_kvServer;
 import java.io.IOException;
 import java.net.*;
 
+import app_kvServer.storage.cache.FIFOCache;
+import app_kvServer.storage.cache.LFUCache;
+import app_kvServer.storage.cache.LRUCache;
 import logger.LogSetup;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import app_kvServer.storage.cache.ICache;
 
 import client.ClientConnWrapper;
 import shared.CommunicationTextMessageHandler;
@@ -16,15 +20,23 @@ import shared.messages.KVMessageModel;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 import shared.messages.KVMessage;
-
 
 public class KVServer extends Thread implements IKVServer {
 
 	private static Logger logger = Logger.getRootLogger();
 
 	private int port;
+
+	private int cacheSize;
+
+	private List<KVClientConnection> connections = new ArrayList<>();
+
+	private ICache.CacheStrategy strategy;
+	private ICache cache;
 	private ServerSocket serverSocket;
 	private boolean running;
 	private DataAccessObject dao;
@@ -38,6 +50,7 @@ public class KVServer extends Thread implements IKVServer {
 	public KVServer(int port, int cacheSize, String strategy) {
 		this.port = port;
 		this.dao = new DataAccessObject(cacheSize, strategy);
+		this.strategy = ICache.CacheStrategy.valueOf(strategy);
 	}
 
 	/**
@@ -51,33 +64,33 @@ public class KVServer extends Thread implements IKVServer {
 		this.dao = new DataAccessObject(cacheSize, strategy);
 	}
 
-	public static void main(String[] args) {
-		int test_port = 5050;
-		System.out.println("server started!");
-		boolean running = true;
-		ServerSocket test_socket;
-		try {
-			test_socket = new ServerSocket(5050);
-		}
-
-		catch (IOException e) {
-			return;
-		}
-		while (running) {
-			try {
-				Socket client = test_socket.accept();
-				ConnWrapper wrapper = new ClientConnWrapper(client);
-				CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(wrapper);
-				KVMessageModel msg = new KVMessageModel();
-				msg.setStatusType(KVMessage.StatusType.GET_SUCCESS);
-				msg.setKey("status");
-				msg.setValue("GET_SUCCESS");
-				handler.sendMsg(msg);
-			}
-			catch (IOException e) {
-			}
-		}
-	}
+//	public static void main(String[] args) {
+//		int test_port = 5050;
+//		System.out.println("server started!");
+//		boolean running = true;
+//		ServerSocket test_socket;
+//		try {
+//			test_socket = new ServerSocket(5050);
+//		}
+//
+//		catch (IOException e) {
+//			return;
+//		}
+//		while (running) {
+//			try {
+//				Socket client = test_socket.accept();
+//				ConnWrapper wrapper = new ClientConnWrapper(client);
+//				CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(wrapper);
+//				KVMessageModel msg = new KVMessageModel();
+//				msg.setStatusType(KVMessage.StatusType.GET_SUCCESS);
+//				msg.setKey("status");
+//				msg.setValue("GET_SUCCESS");
+//				handler.sendMsg(msg);
+//			}
+//			catch (IOException e) {
+//			}
+//		}
+//	}
 	@Override
 	public int getPort(){
 		return port;
@@ -86,20 +99,19 @@ public class KVServer extends Thread implements IKVServer {
 	@Override
     public String getHostname() {
 		try {
-			return InetAddress.getLocalHost().toString();
+			return InetAddress.getLocalHost().getHostName();
 		} catch (UnknownHostException e) {
 			logger.error("Error! " +
 					"Unable to get hostname. \n", e);
-			String hostname = System.getenv("HOSTNAME");
-			if (hostname == null) {
-				hostname = "NullHostName";
-			}
-			return hostname;
+			return null;
 		}
 	}
 
 	@Override
     public void run(){
+		// TODO: uncomment the statement here if DAO finishes
+		//this.dao.clearStorage();
+		//this.dao.clearCache();
 		running = initializeServer();
 
 		if(serverSocket != null) {
@@ -110,7 +122,7 @@ public class KVServer extends Thread implements IKVServer {
 							new KVClientConnection(client, dao);
 					// TODO use thread pool
 					new Thread(connection).start();
-
+					connections.add(connection);
 					logger.info("Connected to "
 							+ client.getInetAddress().getHostName()
 							+  " on port " + client.getPort());
@@ -129,6 +141,9 @@ public class KVServer extends Thread implements IKVServer {
 		running = false;
 		try {
 			serverSocket.close();
+			for (KVClientConnection cc : connections) {
+				cc.close();
+			}
 		} catch (IOException e) {
 			logger.error("Error! " +
 					"Unable to close socket on port: " + port, e);
@@ -147,7 +162,6 @@ public class KVServer extends Thread implements IKVServer {
 			serverSocket = new ServerSocket(port);
 			logger.info("Server listening on port: "
 					+ serverSocket.getLocalPort());
-			return true;
 
 		} catch (IOException e) {
 			logger.error("Error! Cannot open server socket:");
@@ -156,6 +170,29 @@ public class KVServer extends Thread implements IKVServer {
 			}
 			return false;
 		}
+		//TODO: fill the switch statement:
+
+		switch (this.strategy) {
+			case LRU:
+				//TODO: fill it
+				this.cache = new LRUCache(this.cacheSize);
+				break;
+
+			case FIFO:
+				this.cache = new FIFOCache(this.cacheSize);
+				break;
+			case LFU:
+				this.cache = new LFUCache(this.cacheSize);
+				break;
+			case None:
+				this.cache = null;
+				break;
+			default:
+				this.cache = null;
+				break;
+
+		}
+		return true;
 	}
 
 	private boolean isRunning() {
@@ -168,11 +205,16 @@ public class KVServer extends Thread implements IKVServer {
 	 */
 	public static void main(String[] args) {
 		try {
-			new LogSetup("logs/server.log", Level.ALL);
-			if(args.length != 1) {
-				int port = 8080;
-				new KVServer(port).start();
+			new LogSetup("logs/KVserver.log", Level.ALL);
+			if(args.length != 3) {
+				printError("Please provide <port> <cacheSize> <strategy>");
+				return;
 			}
+
+			int port = Integer.parseInt(args[0]);
+			int cacheSize = Integer.parseInt(args[1]);
+			KVServer server = new KVServer(port, cacheSize, args[2]);
+			server.start();
 		} catch (IOException e) {
 			System.out.println("Error! Unable to initialize logger!");
 			e.printStackTrace();
@@ -182,5 +224,10 @@ public class KVServer extends Thread implements IKVServer {
 			System.out.println("Usage: Server <port>!");
 			System.exit(1);
 		}
+	}
+
+	private static void printError(String err) {
+		logger.error(err);
+		System.out.println(err);
 	}
 }
