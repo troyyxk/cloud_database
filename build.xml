@@ -112,9 +112,7 @@
     <junit>
       <classpath refid="project.classpath" />
       <formatter type="brief" usefile="false" />
-<!--      <test name="testing.AllTests" />-->
-          <test name="testing.CommandLineTest"/>
-
+      <test name="testing.AllTests" />
     </junit>
   </target>
 
