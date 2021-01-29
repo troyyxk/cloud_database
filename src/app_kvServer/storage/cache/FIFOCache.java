@@ -48,7 +48,7 @@ public class FIFOCache implements ICache {
     }
 
     @Override
-    public String getKV(String key) throws Exception {
+    public String getKV(String key) throws KeyNotFoundException {
         if (map.containsKey(key)) {
             LinkedNode node = map.get(key);
             return node.value;
@@ -58,7 +58,7 @@ public class FIFOCache implements ICache {
     }
 
     @Override
-    public void putKV(String key, String value) throws Exception {
+    public void putKV(String key, String value) throws StorageFullException {
         if (!map.containsKey(key)) {
             if (map.size() >= cacheSize) {
                 throw new StorageFullException();
@@ -88,7 +88,8 @@ public class FIFOCache implements ICache {
             return;
         }
         LinkedNode node = map.get(key);
-        node.prev.next = node.next;
+        removeNode(node);
+
         map.remove(key);
     }
 
@@ -98,9 +99,20 @@ public class FIFOCache implements ICache {
     }
 
     private void moveNodeToTail(LinkedNode node) {
-        node.next = null;
-        node.prev = tail;
-        tail.next = node;
-        tail = node;
+        tail.prev.next = node;
+        node.prev = tail.prev;
+        node.next = tail;
+        tail.prev = node;
+    }
+
+    private void removeNode(LinkedNode node) {
+        LinkedNode prev = node.prev;
+        node.next.prev = prev;
+        prev.next = node.next;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return this.map.isEmpty();
     }
 }
