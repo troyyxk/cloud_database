@@ -12,18 +12,10 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import app_kvServer.storage.cache.ICache;
 
-import client.ClientConnWrapper;
-import shared.CommunicationTextMessageHandler;
-import shared.ConnWrapper;
-import shared.messages.KVMessageModel;
-
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-
-import shared.messages.KVMessage;
 
 public class KVServer extends Thread implements IKVServer {
 
@@ -50,7 +42,12 @@ public class KVServer extends Thread implements IKVServer {
 	public KVServer(int port, int cacheSize, String strategy) {
 		this.port = port;
 		this.dao = new DataAccessObject(cacheSize, strategy);
-		this.strategy = ICache.CacheStrategy.valueOf(strategy);
+		try{
+			this.strategy = ICache.CacheStrategy.valueOf(strategy);
+		}catch (IllegalArgumentException ex) {
+			this.strategy = ICache.CacheStrategy.None;
+		}
+
 	}
 
 	/**
@@ -64,33 +61,6 @@ public class KVServer extends Thread implements IKVServer {
 		this.dao = new DataAccessObject(cacheSize, strategy);
 	}
 
-//	public static void main(String[] args) {
-//		int test_port = 5050;
-//		System.out.println("server started!");
-//		boolean running = true;
-//		ServerSocket test_socket;
-//		try {
-//			test_socket = new ServerSocket(5050);
-//		}
-//
-//		catch (IOException e) {
-//			return;
-//		}
-//		while (running) {
-//			try {
-//				Socket client = test_socket.accept();
-//				ConnWrapper wrapper = new ClientConnWrapper(client);
-//				CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(wrapper);
-//				KVMessageModel msg = new KVMessageModel();
-//				msg.setStatusType(KVMessage.StatusType.GET_SUCCESS);
-//				msg.setKey("status");
-//				msg.setValue("GET_SUCCESS");
-//				handler.sendMsg(msg);
-//			}
-//			catch (IOException e) {
-//			}
-//		}
-//	}
 	@Override
 	public int getPort(){
 		return port;

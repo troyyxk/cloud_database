@@ -1,5 +1,6 @@
 package app_kvServer;
 
+import app_kvServer.storage.KeyNotFoundException;
 import client.ClientConnWrapper;
 import org.apache.log4j.Logger;
 import shared.CommunicationTextMessageHandler;
@@ -32,7 +33,7 @@ public class KVClientConnection implements Runnable {
 	private DataAccessObject dao;
 
 	/**
-	 * Constructs a new CientConnection object for a given TCP socket.
+	 * Constructs a new ClientConnection object for a given TCP socket.
 	 * @param clientSocket the Socket object for the client connection.
 	 */
 	public KVClientConnection(Socket clientSocket, DataAccessObject dao) throws IOException {
@@ -58,22 +59,78 @@ public class KVClientConnection implements Runnable {
 				try {
 					KVMessage msg = textComm.getKVMsg();
 					KVMessageModel returnResult = new KVMessageModel();
+					/*
+						Handle GET request
+					 */
 					if (msg.getStatus().equals(KVMessage.StatusType.GET)) {
-						// TODO: get command, remember to send GET_SUCCESS Feedback
-						System.out.println("get request!");
-						//TODO: please modify this
-						returnResult.setStatusType(KVMessage.StatusType.GET_SUCCESS);
-
+						String key = msg.getKey();
+						String value;
+						try {
+							System.out.println("get request!");
+							value = dao.getKV(key);
+							returnResult.setKey(msg.getKey());
+							returnResult.setValue(value);
+							returnResult.setStatusType(KVMessage.StatusType.GET_SUCCESS);
+						} catch (Exception kex) {
+							logger.error("GET_ERROR key: " + key);
+							returnResult.setKey(key);
+							returnResult.setStatusType(KVMessage.StatusType.GET_ERROR);
+						}
 						textComm.sendMsg(returnResult);
 					}
-
+					/*
+						Handle PUT request
+					 */
 					else if (msg.getStatus().equals(KVMessage.StatusType.PUT)) {
-						// TODO: get command, remember to send PUT_SUCCESS/PUT_UPDATE Feedback
 						System.out.println("put request!");
-						// TODO: please modify this
-						returnResult.setStatusType(KVMessage.StatusType.PUT_SUCCESS);
+						String key = msg.getKey();
+						String value = msg.getValue();
+						/*
+							PUT request with null value means deletion
+						 */
+						if (value == null || value.equals("NULL") || value.equals("null")) {
+							try {
+								dao.delete(key);
+								returnResult.setStatusType(KVMessage.StatusType.DELETE_SUCCESS);
+							} catch (IOException IOEx){
+								logger.error("DELETE_ERROR key: " + key);
+								returnResult.setStatusType(KVMessage.StatusType.DELETE_ERROR);
+							}
+						}
+						/*
+							PUT request, either update or add new entry
+						 */
+						else {
+							/*
+								Update request
+							 */
+							if (dao.contains(key)) {
+								try {
+									dao.putKV(key, value);
+									returnResult.setStatusType(KVMessage.StatusType.PUT_UPDATE);
+								} catch (Exception ex) {
+									logger.error("UPDATE_ERROR key: " + key);
+									returnResult.setStatusType(KVMessage.StatusType.PUT_ERROR);
+								}
+							}
+							/*
+								New entry request
+							 */
+							else {
+								try {
+									dao.putKV(key, value);
+									returnResult.setStatusType(KVMessage.StatusType.PUT_SUCCESS);
+								} catch (Exception ex) {
+									logger.error("PUT_ERROR key: " + key);
+									returnResult.setStatusType(KVMessage.StatusType.PUT_ERROR);
+								}
+							}
+						}
+						returnResult.setKey(key);
+						returnResult.setValue(value);
 						textComm.sendMsg(returnResult);
 					}
+
 				/* connection either terminated by the client or lost due to 
 				 * network problems*/	
 				} catch (IOException ioe) {
