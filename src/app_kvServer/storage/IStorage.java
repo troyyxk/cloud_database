@@ -23,13 +23,8 @@ public interface IStorage {
     public void putKV(String key, String value) throws Exception;
 
     /**
-     * Clear the storage of the server
-     */
-    public void clear();
-
-    /**
      * Delete a specific key
      */
-    public void delete(String key);
+    public void delete(String key) throws Exception;
 
 }
