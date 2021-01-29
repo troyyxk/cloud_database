@@ -20,8 +20,11 @@ public class CommunicationTextMessageHandler extends CommunicationSockMessageHan
         KVMessageModel model = new KVMessageModel();
 
         JSONObject json = new JSONObject(this.getMsg());
+        if (json.has("key"))
         model.setKey(json.getString("key"));
+        if (json.has("value"))
         model.setValue(json.getString("value"));
+        if (json.has("status"))
         model.setStatusType(KVMessage.StatusType.valueOf(json.getString("status")));
         return model;
     }
