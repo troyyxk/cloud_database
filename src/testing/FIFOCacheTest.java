@@ -1,14 +1,10 @@
 package testing;
-import app_kvServer.storage.StorageFullException;
 import app_kvServer.storage.cache.FIFOCache;
 import app_kvServer.storage.cache.ICache;
 import org.junit.After;
-import org.junit.Before;
 import junit.framework.TestCase;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.util.Iterator;
 
 public class FIFOCacheTest extends TestCase{
     private ICache cache;
@@ -21,7 +17,7 @@ public class FIFOCacheTest extends TestCase{
 
     @After
     public void tearDown() {
-        cache.clear();
+        cache.clearCache();
     }
 
     @Test
@@ -62,7 +58,7 @@ public class FIFOCacheTest extends TestCase{
                 String value = "value" + i;
                 cache.putKV(key, value);
             }
-            cache.clear();
+            cache.clearCache();
             assertTrue(cache.isEmpty());
         } catch (Exception ex) {
             e = ex;

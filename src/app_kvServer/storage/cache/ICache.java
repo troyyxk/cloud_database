@@ -54,7 +54,7 @@ public interface ICache extends IStorage {
     /**
      * Clear Cache
      */
-    public void clear();
+    public void clearCache();
 
     /**
      * Nominate a key for eviction to cache strategy
