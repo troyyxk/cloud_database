@@ -1,181 +1,86 @@
 package client;
 
+
 import java.io.*;
 import java.util.*;
+import org.json.*;
 
 import static java.lang.System.exit;
 import static java.lang.System.out;
 
-import app_kvServer.storage.persistence;
-
-
 public class PStore implements IPersistence{
-    private static String fileAddress = "./PStore.txt";
-    private static String delimiter = ",";
+    private String fileAddress = "./PStore.txt";
 
-
-    public static boolean contains(String key) {
-        int loc = find_loc(key);
-        if (loc < 0) {
-            return false;
-        }
-        return true;
+    public boolean contains(String key){
+        JSONObject allPairs = readFile();
+        return allPairs.has(key);
     }
 
-    /**
-     * Check if key is in storage
-     * -1 for not found
-     * return is the byte location
-     *
-     * @param key
-     * @return byte location of the key
-     */
-    public static int find_loc(String key) {
-        File store = new File(fileAddress);
-        // check if file does not exist
-        if (!(store.exists())) {
-            return -1;
-        }
-        int byteLocation = 0;
-        try {
-            FileReader fr = new FileReader(store);
-            BufferedReader br = new BufferedReader(fr);
-            String line = br.readLine();
-            while (line != null) {
-                line = line.strip();
-                List<String> lines = Arrays.asList(line.split(delimiter));
-                // out.println(lines);
-                if (lines.get(0).equals(key)) {
-                    return byteLocation;
-                }
-                // because 1 byte for every character
-                byteLocation += line.getBytes().length + 1;
-//                out.println(byteLocation);
-                line = br.readLine();
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
-
-    /**
-     * Get the value for the key
-     *
-     * @param key
-     */
-    public static String getKV(String key) {
-        File store = new File(fileAddress);
-        // check if file does not exist
-        if (!(store.exists())) {
+    public String getKV(String key){
+        if (!contains(key)){
             exit(1);
         }
-        try {
-            FileReader fr = new FileReader(store);
-            BufferedReader br = new BufferedReader(fr);
-            String line = br.readLine();
-            while (line != null) {
-                line = line.strip();
-                List<String> lines = Arrays.asList(line.split(delimiter));
-                if (lines.get(0).equals(key)) {
-                    return lines.get(1);
-                }
-                line = br.readLine();
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        exit(1);
-        return "Not Found";
+        JSONObject allPairs = readFile();
+        return allPairs.getString(key);
     }
 
-    /**
-     * Put the key-value pair into storage
-     * If the storage file does not exist, create the file
-     * @param key
-     * @param value
-     */
-    public static void delete(String key) {
-        File store = new File(fileAddress);
-        // check if file does not exist
-        if (!(store.exists())) {
-            try {
-                store.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        // delete the og from file
-        int loc = find_loc(key);
-        if (loc >= 0){
-            out.println(loc);
-            try {
-                RandomAccessFile rf = new RandomAccessFile(fileAddress, "rw");
-                rf.seek(loc);
-                byte[] bytes = new byte[2];
-                rf.write(bytes);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+    public void putKV(String key, String value){
+        JSONObject allPairs = readFile();
+        allPairs.put(key, value);
+        writeFile(allPairs);
     }
 
-    /**
-     * Put the key-value pair into storage
-     * If the storage file does not exist, create the file
-     * @param key
-     * @param value
-     */
-    public static void putKV(String key, String value) {
-        File store = new File(fileAddress);
-        // check if file does not exist
-        if (!(store.exists())) {
-            try {
-                store.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        // delete the og from file
-        int loc = find_loc(key);
-        if (loc >= 0){
-            out.println(loc);
-            try {
-                RandomAccessFile rf = new RandomAccessFile(fileAddress, "rw");
-                rf.seek(loc);
-                byte[] bytes = new byte[2];
-                rf.write(bytes);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // write to file
-        try {
-            FileWriter fw = new FileWriter(store, true);
-            BufferedWriter bw = new BufferedWriter(fw);
-            bw.write(key + delimiter + value + '\n');
-            bw.close();
-            fw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Delete the persistent storage
-     */
-    public static void clear(){
+    public void clear(){
         File store = new File(fileAddress);
         store.delete();
     }
 
+    public JSONObject readFile(){
+        File store = new File(fileAddress);
+        // check if file does not exist
+        if (!(store.exists())) {
+            String str = "{}";
+            JSONObject obj = new JSONObject(str);
+            return obj;
+        }
+        String str = "{}";
+        try {
+            FileReader fr = new FileReader(store);
+            BufferedReader br = new BufferedReader(fr);
+            str = br.readLine();
+            br.close();
+            fr.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found");
+        } catch (IOException e) {
+            System.out.println("Cannot read");
+        }
+        JSONObject allPairs = new JSONObject(str);
+        return allPairs;
+
+    }
+
+    public void writeFile(JSONObject pairs){
+        File store = new File(fileAddress);
+        // check if file does not exist
+        if (store.exists()) {
+            store.delete();
+            try {
+                store.createNewFile();
+            } catch (IOException e) {
+                System.out.println("Cannot create new file");
+            }
+        }
+        // write to file
+        String allPairs = pairs.toString();
+        try {
+            FileWriter fw = new FileWriter(store, true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(allPairs);
+            bw.close();
+            fw.close();
+        } catch (IOException e) {
+            System.out.println("Cannot write file");
+        }
+    }
 }
