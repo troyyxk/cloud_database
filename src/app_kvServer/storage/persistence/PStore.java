@@ -1,14 +1,15 @@
-package client;
-
+package app_kvServer.storage.persistence;
 
 import java.io.*;
 import java.util.*;
+
+import app_kvServer.storage.persistence.IPersistence;
 import org.json.*;
 
 import static java.lang.System.exit;
 import static java.lang.System.out;
 
-public class PStore implements IPersistence{
+public class PStore implements IPersistence {
     private String fileAddress = "./PStore.txt";
 
     public boolean contains(String key){
@@ -30,9 +31,11 @@ public class PStore implements IPersistence{
         writeFile(allPairs);
     }
 
-    public void clear(){
-        File store = new File(fileAddress);
-        store.delete();
+    @Override
+    public void delete(String key) throws Exception {
+        JSONObject allPairs = readFile();
+        allPairs.remove(key);
+        writeFile(allPairs);
     }
 
     public JSONObject readFile(){
@@ -82,5 +85,11 @@ public class PStore implements IPersistence{
         } catch (IOException e) {
             System.out.println("Cannot write file");
         }
+    }
+
+    @Override
+    public void clearStorage() throws Exception {
+        File store = new File(fileAddress);
+        store.delete();
     }
 }
