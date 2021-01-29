@@ -74,7 +74,6 @@ public class KVStore implements KVCommInterface {
 		if (this.connWrapper == null) {
 			throw new IOException();
 		}
-
 		KVMessageModel kvMsg = new KVMessageModel();
 		kvMsg.setStatusType(KVMessage.StatusType.PUT);
 		kvMsg.setKey(key);
@@ -94,6 +93,7 @@ public class KVStore implements KVCommInterface {
 		}
 		KVMessageModel kvMsg = new KVMessageModel();
 		kvMsg.setKey(key);
+		kvMsg.setValue("null");
 		kvMsg.setStatusType(KVMessage.StatusType.GET);
 		CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
 		handler.sendMsg(kvMsg);
