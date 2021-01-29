@@ -120,7 +120,7 @@ public class FIFOCacheTest extends TestCase{
 
     @Test
     public void testGetCacheSizeShouldMatch() {
-        assertEquals(cacheSize, cache.getCacheSize());
+        assertEquals(0, cache.getCacheSize());
     }
 
     @Test

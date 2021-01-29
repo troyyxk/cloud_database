@@ -87,12 +87,7 @@ public class DAOTest extends TestCase{
 
     @Test
     public void testGetCacheSizeShouldMatch() {
-        if (!strategy.equals("NONE")) {
-            assertEquals(cacheSize, dao.getCacheSize());
-        } else {
-            assertEquals(0, dao.getCacheSize());
-        }
-
+        assertEquals(0, dao.getCacheSize());
     }
 
     @Test
