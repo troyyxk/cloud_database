@@ -53,6 +53,8 @@ public interface ICache extends IStorage {
      * Nominate a key for eviction to cache strategy
      * @return return a candidate key for eviction
      */
-    public String evict() throws Exception;
+    public String evict();
+
+    public boolean isEmpty();
 
 }
