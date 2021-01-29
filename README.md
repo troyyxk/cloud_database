@@ -2,44 +2,28 @@
 Course project of ECE419, distributed system, at the University of Toronto. A distributed system for a cloud database. The Project is divide into 4 milestones.
 
 ## Getting Started
-### Sever
-In the echoSever folder, compile and build with:
- ```
- ant
- ```
- Follow by the command bellow to run
- ```
- java -jar echoServer.jar <port number>
- ```
-Port numbers between 1024 and 65536 should be used (pick a random port to avoid conflicting with other services.) If you cannot start the server because “Port is already bound!” use a different port number. Avoid hard-coding port numbers for this reason.
 
-### Client
-
+### Client & Server
+For running test of the project
+```
+ant test
+```
  In the echoClient folder, compile and build with:
  ```
- ant
+ ant build-jar
  ```
  Follow by the command bellow to run:
  ```
-java -jar echoClient.jar
+java -jar ms1-server.jar <port> <cache_size> <cache_strategy>
+java -jar ms1-client.jar
  ```
 Your prompt should change to:
 ```
-EchoClient>
+ms1-client>
 ```
 and that's all set. 
 
 You can play with it now.
-
-## Milestone 1 Client and Persistent Storage Server
-Folder: M1
-
-
-
-## Development Plan
-  - client deal with reply message status (KVMessage)
-  - Junit
-  - Performance (Locust generating report?)
 
 ### Jefferson
 - Main (wheel)
@@ -51,28 +35,12 @@ Folder: M1
   - LRU remove use Java API
 
 ### Troy
-- Dump to persistence storage
-  - read/write
-  - Data Access Object
-    - put(key, value)
-        - write to a file (append to a file O(1))
-    - get(key)
-        - read from a file (scan the entire file line by line)
-    format:
-    key1,value1
-    key2,value2
-    scanner readline
+- Dump evicted key to persistence storage
+- implement read/write IO to storage file
 
 ### Junxuan
-- Single threaded server client
-- socket communication
-- message protocol design
-- Client and server accept messages
-- parse client/server message
+- Single threaded server client implementation
+- socket communication library- message protocol design
+- Server controller, implementation of server side communication tunnel
+- parse client/server messagess
 
-
-
-
-====================================================
-MILESTONE 4 require non-trival functionality
-- Atomic operation
