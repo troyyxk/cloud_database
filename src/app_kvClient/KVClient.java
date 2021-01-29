@@ -199,7 +199,12 @@ public class KVClient implements IKVClient {
             try {
                 KVMessage respondMsg = this.storageConnection.put(targetKey, targetValue);
                 if (respondMsg.getStatus().toString().equals(KVMessage.StatusType.PUT_SUCCESS.toString())) {
-                    printInfo("Value saved to server");
+                    printInfo("Value inserted to server");
+                    printInfo("SUCCESS");
+                }
+
+                else if (respondMsg.getStatus().toString().equals(KVMessage.StatusType.PUT_UPDATE.toString())) {
+                    printInfo("Value updated successfully to server");
                     printInfo("SUCCESS");
                 }
 
