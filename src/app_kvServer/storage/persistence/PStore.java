@@ -1,6 +1,4 @@
-package client;
-
-import app_kvServer.storage.persistence.IPersistence;
+package app_kvServer.storage.persistence;
 
 import java.io.*;
 import java.util.*;
@@ -8,26 +6,29 @@ import java.util.*;
 import static java.lang.System.exit;
 import static java.lang.System.out;
 
+
+
 public class PStore implements IPersistence {
     private static String fileAddress = "./PStore.txt";
     private static String delimiter = ",";
 
-
-    public static boolean contains(String key){
+    public boolean contains(String key) {
         int loc = find_loc(key);
-        if (loc < 0 ) {
+        if (loc < 0) {
             return false;
         }
         return true;
     }
+
     /**
      * Check if key is in storage
      * -1 for not found
      * return is the byte location
+     *
      * @param key
      * @return byte location of the key
      */
-    public static int find_loc(String key){
+    public int find_loc(String key) {
         File store = new File(fileAddress);
         // check if file does not exist
         if (!(store.exists())) {
@@ -38,11 +39,11 @@ public class PStore implements IPersistence {
             FileReader fr = new FileReader(store);
             BufferedReader br = new BufferedReader(fr);
             String line = br.readLine();
-            while (line != null){
+            while (line != null) {
                 line = line.strip();
                 List<String> lines = Arrays.asList(line.split(delimiter));
                 // out.println(lines);
-                if (lines.get(0).equals(key)){
+                if (lines.get(0).equals(key)) {
                     return byteLocation;
                 }
                 // because 1 byte for every character
@@ -60,9 +61,10 @@ public class PStore implements IPersistence {
 
     /**
      * Get the value for the key
+     *
      * @param key
      */
-    public static String getKV(String key){
+    public String getKV(String key) {
         File store = new File(fileAddress);
         // check if file does not exist
         if (!(store.exists())) {
@@ -72,10 +74,10 @@ public class PStore implements IPersistence {
             FileReader fr = new FileReader(store);
             BufferedReader br = new BufferedReader(fr);
             String line = br.readLine();
-            while (line != null){
+            while (line != null) {
                 line = line.strip();
                 List<String> lines = Arrays.asList(line.split(delimiter));
-                if (lines.get(0).equals(key)){
+                if (lines.get(0).equals(key)) {
                     return lines.get(1);
                 }
                 line = br.readLine();
@@ -93,9 +95,41 @@ public class PStore implements IPersistence {
      * Put the key-value pair into storage
      * If the storage file does not exist, create the file
      * @param key
+     */
+    public void delete(String key) {
+        File store = new File(fileAddress);
+        // check if file does not exist
+        if (!(store.exists())) {
+            try {
+                store.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        // delete the og from file
+        int loc = find_loc(key);
+        if (loc >= 0){
+            out.println(loc);
+            try {
+                RandomAccessFile rf = new RandomAccessFile(fileAddress, "rw");
+                rf.seek(loc);
+                byte[] bytes = new byte[2];
+                rf.write(bytes);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Put the key-value pair into storage
+     * If the storage file does not exist, create the file
+     * @param key
      * @param value
      */
-    public static void putKV(String key, String value) {
+    public void putKV(String key, String value) {
         File store = new File(fileAddress);
         // check if file does not exist
         if (!(store.exists())) {
@@ -136,7 +170,7 @@ public class PStore implements IPersistence {
     /**
      * Delete the persistent storage
      */
-    public static void clear(){
+    public void clear(){
         File store = new File(fileAddress);
         store.delete();
     }
