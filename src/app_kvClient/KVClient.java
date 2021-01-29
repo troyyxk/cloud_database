@@ -6,7 +6,7 @@ import logger.LogSetup;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
-
+import shared.messages.KVMessage;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -127,10 +127,113 @@ public class KVClient implements IKVClient {
         }
 
         else if (option.trim().equals(CommandPhrase.GET.value())) {
+            if (args.length != 2) {
+                printError("Invalid number of Arguments, should be get <key>");
+                return;
+            }
+            if (this.storageConnection == null) {
+                printError("No Connection to any servers!");
+                return;
+            }
 
+            String targetKey = args[1];
+
+            if (targetKey.length() > 20) {
+                printError("key length is limited to 20 bytes!");
+                return;
+            }
+            try {
+                KVMessage respondMsg = this.storageConnection.get(targetKey);
+                if (respondMsg.getStatus().toString().equals(KVMessage.StatusType.GET_SUCCESS.toString())) {
+                    printInfo("Value got from server is: " + respondMsg.getValue());
+                }
+
+                else if (respondMsg.getStatus().toString().equals(KVMessage.StatusType.GET_ERROR.toString())) {
+                    printError("The key is not present in the server");
+                }
+
+                else {
+                    printError("Status unmatched for get: " + respondMsg.getStatus());
+                }
+            }
+
+            catch (SocketTimeoutException e) {
+                printError("Connection timeout, server doesn't respond!");
+            }
+
+            catch (JSONException | IllegalArgumentException e) {
+                printError("Server returns invalid message");
+            }
+
+            catch (IOException e) {
+                printError("Connection failed! Server refused connection!");
+            }
+
+            catch (Exception e) {
+                printError("Unable to connect");
+            }
         }
 
         else if (option.trim().equals(CommandPhrase.PUT.value())) {
+
+            if (args.length != 3) {
+                printError("Invalid number of Arguments, should be put <key> <value>");
+                return;
+            }
+            if (this.storageConnection == null) {
+                printError("No Connection to any servers!");
+                return;
+            }
+            String targetKey = args[1];
+            String targetValue = args[2];
+
+            if (targetKey.length() > 20) {
+                printError("Key length is limited to 20 bytes!");
+                return;
+            }
+
+            if (targetValue.length() > 120_000) {
+                printError("Value length is limited to 120k bytes");
+                return;
+            }
+            try {
+                KVMessage respondMsg = this.storageConnection.put(targetKey, targetValue);
+                if (respondMsg.getStatus().toString().equals(KVMessage.StatusType.PUT_SUCCESS.toString())) {
+                    printInfo("Value inserted to server");
+                    printInfo("SUCCESS");
+                }
+
+                else if (respondMsg.getStatus().toString().equals(KVMessage.StatusType.PUT_UPDATE.toString())) {
+                    printInfo("Value updated successfully to server");
+                    printInfo("SUCCESS");
+                }
+
+                else if (respondMsg.getStatus().toString().equals(KVMessage.StatusType.PUT_ERROR.toString())) {
+                    printError("put operation failed!");
+                    printError("ERROR");
+                }
+
+                else {
+                    printError("Status unmatched for get: " + respondMsg.getStatus());
+                    printError("ERROR");
+                }
+            }
+
+            catch (SocketTimeoutException e) {
+                printError("Connection timeout, server doesn't respond!");
+            }
+
+            catch (JSONException | IllegalArgumentException e) {
+                printError("Server returns invalid message");
+            }
+
+            catch (IOException e) {
+                printError("Connection failed! Server refused connection!");
+            }
+
+            catch (Exception e) {
+                printError("Unable to connect");
+            }
 
         }
 
@@ -226,7 +329,7 @@ public class KVClient implements IKVClient {
                 "get <key>: get value from key\n" +
                 "help: get the man page\n" +
                 "quit: exit the program\n" +
-                "loglevel <level>: ALL|DEBUG|INFO|WARN|ERROR|FATAL|OFF";
+                "loglevel <level>: ALL|DEBUG|INFO|WARN|ERROR|FATAL|OFF\n";
         printInfo(helpText);
     }
 
