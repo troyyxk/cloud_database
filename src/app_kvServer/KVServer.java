@@ -23,12 +23,7 @@ public class KVServer extends Thread implements IKVServer {
 
 	private int port;
 
-	private int cacheSize;
-
 	private List<KVClientConnection> connections = new ArrayList<>();
-
-	private ICache.CacheStrategy strategy;
-	private ICache cache;
 	private ServerSocket serverSocket;
 	private boolean running;
 	private DataAccessObject dao;
@@ -42,12 +37,6 @@ public class KVServer extends Thread implements IKVServer {
 	public KVServer(int port, int cacheSize, String strategy) {
 		this.port = port;
 		this.dao = new DataAccessObject(cacheSize, strategy);
-		try{
-			this.strategy = ICache.CacheStrategy.valueOf(strategy);
-		}catch (IllegalArgumentException ex) {
-			this.strategy = ICache.CacheStrategy.None;
-		}
-
 	}
 
 	/**
@@ -57,13 +46,13 @@ public class KVServer extends Thread implements IKVServer {
 	public KVServer(int port) {
 		this.port = port;
 		int cacheSize = 4096;
-		String strategy = "None";
+		String strategy = "FIFO";
 		this.dao = new DataAccessObject(cacheSize, strategy);
 	}
 
 	@Override
 	public int getPort(){
-		return port;
+		return this.port;
 	}
 
 	@Override
@@ -78,10 +67,48 @@ public class KVServer extends Thread implements IKVServer {
 	}
 
 	@Override
+	public CacheStrategy getCacheStrategy() {
+		return dao.getCacheStrategy();
+	}
+
+	@Override
+	public int getCacheSize() {
+		return dao.getCacheSize();
+	}
+
+	@Override
+	public boolean inStorage(String key) {
+		return dao.inStorage(key);
+	}
+
+	@Override
+	public boolean inCache(String key) {
+		return dao.inStorage(key);
+	}
+
+	@Override
+	public String getKV(String key) throws Exception {
+		return dao.getKV(key);
+	}
+
+	@Override
+	public void putKV(String key, String value) throws Exception {
+		dao.putKV(key, value);
+	}
+
+	@Override
+	public void clearCache() {
+		dao.clearCache();
+	}
+
+	@Override
+	public void clearStorage() {
+		dao.clearStorage();
+	}
+
+	@Override
     public void run(){
-		// TODO: uncomment the statement here if DAO finishes
-		//this.dao.clearStorage();
-		//this.dao.clearCache();
+		this.dao.clearCache();
 		running = initializeServer();
 
 		if(serverSocket != null) {
@@ -90,7 +117,6 @@ public class KVServer extends Thread implements IKVServer {
 					Socket client = serverSocket.accept();
 					KVClientConnection connection =
 							new KVClientConnection(client, dao);
-					// TODO use thread pool
 					new Thread(connection).start();
 					connections.add(connection);
 					logger.info("Connected to "
@@ -107,7 +133,6 @@ public class KVServer extends Thread implements IKVServer {
 
 	@Override
     public void kill(){
-		// TODO Auto-generated method stub
 		running = false;
 		try {
 			serverSocket.close();
@@ -122,7 +147,8 @@ public class KVServer extends Thread implements IKVServer {
 
 	@Override
     public void close() {
-		// TODO save to persistent storage
+		running = false;
+		dao.flush();
 		kill();
 	}
 
@@ -139,28 +165,6 @@ public class KVServer extends Thread implements IKVServer {
 				logger.error("Port " + port + " is already bound!");
 			}
 			return false;
-		}
-		//TODO: fill the switch statement:
-
-		switch (this.strategy) {
-			case LRU:
-				//TODO: fill it
-				this.cache = new LRUCache(this.cacheSize);
-				break;
-
-			case FIFO:
-				this.cache = new FIFOCache(this.cacheSize);
-				break;
-			case LFU:
-				this.cache = new LFUCache(this.cacheSize);
-				break;
-			case None:
-				this.cache = null;
-				break;
-			default:
-				this.cache = null;
-				break;
-
 		}
 		return true;
 	}

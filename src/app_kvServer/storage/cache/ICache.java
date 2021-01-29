@@ -1,5 +1,6 @@
 package app_kvServer.storage.cache;
 
+import app_kvServer.IKVServer;
 import app_kvServer.storage.IStorage;
 
 import java.util.Map;
@@ -8,19 +9,6 @@ import java.util.Map;
  * A cache is an object to temporarily store data.
  */
 public interface ICache extends IStorage {
-
-    /**
-     * Strategy specifies the cache replacement strategy in case the cache
-     * is full and there is a GET- or PUT-request on a key that is
-     * currently not contained in the cache. Options are "FIFO", "LRU",
-     * and "LFU".
-     */
-    public enum CacheStrategy {
-        None,
-        LRU,
-        LFU,
-        FIFO
-    };
 
     /**
      * A Linked List implementation. Used for Cache implementation
@@ -42,7 +30,7 @@ public interface ICache extends IStorage {
      * Get the cache strategy of the server
      * @return  cache strategy
      */
-    public CacheStrategy getCacheStrategy();
+    public IKVServer.CacheStrategy getCacheStrategy();
 
     /**
      * Get the cache size

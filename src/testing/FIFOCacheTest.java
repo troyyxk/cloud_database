@@ -1,4 +1,5 @@
 package testing;
+import app_kvServer.IKVServer;
 import app_kvServer.storage.cache.FIFOCache;
 import app_kvServer.storage.cache.ICache;
 import org.junit.After;
@@ -114,7 +115,7 @@ public class FIFOCacheTest extends TestCase{
 
     @Test
     public void testCacheStrategyShouldBeFIFO() {
-        assertEquals(ICache.CacheStrategy.FIFO, cache.getCacheStrategy());
+        assertEquals(IKVServer.CacheStrategy.FIFO, cache.getCacheStrategy());
     }
 
     @Test
