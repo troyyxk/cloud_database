@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-Ant-Version: Apache Ant 1.10.7
-Created-By: 11.0.9.1+1-Ubuntu-0ubuntu1.20.04 (Ubuntu)
-built-by: yxk
-Main-Class: server.Server
-Class-Path: libs/log4j-1.2.17.jar
-
