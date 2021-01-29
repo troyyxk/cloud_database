@@ -1,50 +1,71 @@
 package app_kvServer.storage.persistence;
 
 import java.io.*;
+import java.security.KeyException;
 import java.util.*;
 
+import app_kvServer.storage.KeyNotFoundException;
 import app_kvServer.storage.persistence.IPersistence;
+
 import org.json.*;
 
-import static java.lang.System.exit;
-import static java.lang.System.out;
 
 public class PStore implements IPersistence {
-    private String fileAddress = "./PStore.txt";
+    private String fileAddress;
+    public PStore(String fileAddress) {
+        this.fileAddress = fileAddress;
+    }
 
     public boolean contains(String key){
-        JSONObject allPairs = readFile();
-        return allPairs.has(key);
-    }
-
-    public String getKV(String key){
-        if (!contains(key)){
-            exit(1);
+        try {
+            JSONObject allPairs = readFile();
+            return allPairs.has(key);
+        } catch (Exception ex) {
+            return false;
         }
-        JSONObject allPairs = readFile();
-        return allPairs.getString(key);
-    }
-
-    public void putKV(String key, String value){
-        JSONObject allPairs = readFile();
-        allPairs.put(key, value);
-        writeFile(allPairs);
     }
 
     @Override
-    public void delete(String key) throws Exception {
-        JSONObject allPairs = readFile();
-        allPairs.remove(key);
-        writeFile(allPairs);
+    public String getKV(String key) throws KeyNotFoundException, IOException{
+        if (!contains(key)){
+            throw new KeyNotFoundException();
+        }
+        try {
+            JSONObject allPairs = readFile();
+            return allPairs.getString(key);
+        } catch (Exception ex) {
+            throw new IOException(ex);
+        }
     }
 
-    public JSONObject readFile(){
+    @Override
+    public void putKV(String key, String value) throws IOException{
+        try {
+            JSONObject allPairs = readFile();
+            allPairs.put(key, value);
+            writeFile(allPairs);
+        } catch (Exception ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    @Override
+    public void delete(String key) throws IOException {
+        try {
+            JSONObject allPairs = readFile();
+            allPairs.remove(key);
+            writeFile(allPairs);
+        } catch (Exception ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    public JSONObject readFile() throws IOException {
         File store = new File(fileAddress);
         // check if file does not exist
         if (!(store.exists())) {
             String str = "{}";
-            JSONObject obj = new JSONObject(str);
-            return obj;
+            return new JSONObject(str);
         }
         String str = "{}";
         try {
@@ -53,25 +74,21 @@ public class PStore implements IPersistence {
             str = br.readLine();
             br.close();
             fr.close();
-        } catch (FileNotFoundException e) {
-            System.out.println("File not found");
-        } catch (IOException e) {
-            System.out.println("Cannot read");
+            return new JSONObject(str);
+        } catch (Exception ex) {
+            throw new IOException(ex);
         }
-        JSONObject allPairs = new JSONObject(str);
-        return allPairs;
-
     }
 
-    public void writeFile(JSONObject pairs){
+    public void writeFile(JSONObject pairs) throws IOException{
         File store = new File(fileAddress);
         // check if file does not exist
         if (store.exists()) {
             store.delete();
             try {
                 store.createNewFile();
-            } catch (IOException e) {
-                System.out.println("Cannot create new file");
+            } catch (Exception e) {
+                throw new IOException(e);
             }
         }
         // write to file
@@ -83,13 +100,18 @@ public class PStore implements IPersistence {
             bw.close();
             fw.close();
         } catch (IOException e) {
-            System.out.println("Cannot write file");
+            throw new IOException(e);
         }
     }
 
     @Override
-    public void clearStorage() throws Exception {
-        File store = new File(fileAddress);
-        store.delete();
+    public void clearStorage() throws IOException {
+        try {
+            File store = new File(fileAddress);
+            store.delete();
+        } catch (Exception ex) {
+            throw new IOException(ex);
+        }
+
     }
 }
