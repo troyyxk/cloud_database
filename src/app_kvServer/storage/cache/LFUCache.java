@@ -62,7 +62,7 @@ public class LFUCache implements ICache{
     }
 
     @Override
-    public String getKV(String key) throws Exception {
+    public String getKV(String key) throws KeyNotFoundException {
         if (!keyMap.containsKey(key)) {
             throw new KeyNotFoundException();
         }
@@ -73,7 +73,7 @@ public class LFUCache implements ICache{
 
     void incrFreq(FreqLinkedNode node) {
         LRUCache freqKCache = freqMap.get(node.freq);
-        freqKCache.delete(node.key);
+//        freqKCache.delete(node.key);
         if (freqKCache.isEmpty()) {
             freqMap.remove(node.freq);
         }
@@ -91,7 +91,7 @@ public class LFUCache implements ICache{
     }
 
     @Override
-    public void putKV(String key, String value) throws Exception {
+    public void putKV(String key, String value) throws StorageFullException {
         if (!keyMap.containsKey(key)) {
             if (keyMap.size() >= cacheSize) {
                 throw new StorageFullException();
@@ -121,7 +121,10 @@ public class LFUCache implements ICache{
     }
 
     @Override
-    public void delete(String key) {
+    public void delete(String key) throws KeyNotFoundException{
+        if (!keyMap.containsKey(key)) {
+            throw new KeyNotFoundException();
+        }
         FreqLinkedNode node = keyMap.get(key);
         keyMap.remove(key);
         LRUCache freqKCache = freqMap.get(node.freq);
@@ -152,5 +155,10 @@ public class LFUCache implements ICache{
         if (minFreq == Integer.MAX_VALUE) {
             minFreq = 0;
         }
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return this.keyMap.isEmpty();
     }
 }

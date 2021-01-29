@@ -69,7 +69,7 @@ public class FIFOCache implements ICache {
         } else {
             LinkedNode node = map.get(key);
             node.value = value;
-            node.prev.next = node.next;
+            removeNode(node);
             moveNodeToTail(node);
         }
     }
@@ -82,20 +82,18 @@ public class FIFOCache implements ICache {
     }
 
     @Override
-    public void delete(String key) {
-        // No such key in cache, nothing to delete
+    public void delete(String key) throws KeyNotFoundException {
+        // No such key in cache
         if (!map.containsKey(key)) {
-            return;
+            throw new KeyNotFoundException();
         }
         LinkedNode node = map.get(key);
         removeNode(node);
-
         map.remove(key);
     }
 
     public String evict() {
-        String key = head.next.key;
-        return key;
+        return head.next.key;
     }
 
     private void moveNodeToTail(LinkedNode node) {

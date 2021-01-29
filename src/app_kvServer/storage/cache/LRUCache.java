@@ -48,22 +48,18 @@ public class LRUCache implements ICache{
     }
 
     @Override
-    public String getKV(String key) throws Exception{
+    public String getKV(String key) throws KeyNotFoundException{
         if (!map.containsKey(key)) {
             throw new KeyNotFoundException();
         }
         LinkedNode node = map.get(key);
         // Move node to the tail
-        node.prev.next = node.next;
-        node.next = null;
-        node.prev = tail;
-        tail.next = node;
-        tail = node;
+        moveNodeToTail(node);
         return node.value;
     }
 
     @Override
-    public void putKV(String key, String value) throws Exception{
+    public void putKV(String key, String value) throws StorageFullException{
         if (!map.containsKey(key)) {
             if (map.size() >= cacheSize) {
                 throw new StorageFullException();
@@ -73,8 +69,7 @@ public class LRUCache implements ICache{
         } else {
             LinkedNode node = map.get(key);
             node.value = value;
-            // Move node to the tail
-            node.prev.next = node.next;
+            removeNode(node);
             moveNodeToTail(node);
         }
     }
@@ -92,13 +87,13 @@ public class LRUCache implements ICache{
     }
 
     @Override
-    public void delete(String key) {
+    public void delete(String key) throws KeyNotFoundException{
         // No such key in cache, nothing to delete
         if (!map.containsKey(key)) {
-            return;
+            throw new KeyNotFoundException();
         }
         LinkedNode node = map.get(key);
-        node.prev.next = node.next;
+        removeNode(node);
         map.remove(key);
     }
 
@@ -108,13 +103,20 @@ public class LRUCache implements ICache{
     }
 
     private void moveNodeToTail(LinkedNode node) {
-        node.next = null;
-        node.prev = tail;
-        tail.next = node;
-        tail = node;
+        tail.prev.next = node;
+        node.prev = tail.prev;
+        node.next = tail;
+        tail.prev = node;
     }
 
-    boolean isEmpty() {
+    private void removeNode(LinkedNode node) {
+        LinkedNode prev = node.prev;
+        node.next.prev = prev;
+        prev.next = node.next;
+    }
+
+    @Override
+    public boolean isEmpty() {
         return this.map.isEmpty();
     }
 
