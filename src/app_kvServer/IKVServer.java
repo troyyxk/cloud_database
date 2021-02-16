@@ -72,18 +72,50 @@ public interface IKVServer {
     public void clearStorage();
 
     /**
-     * Starts running the server
+     * Stops the KVServer, all client requests are rejected and
+     * only ECS requests are processed
      */
-    public void run();
+    public void stop();
 
     /**
-     * Abruptly stop the server without any additional actions
-     * NOTE: this includes performing saving to storage
+     * Starts the KVServer, all client requests and all ECS requests
+     * are processed
+     *
      */
-    public void kill();
+    // TODO: Modify from run to start
+    public void start();
 
     /**
-     * Gracefully stop the server, can perform any additional actions
+     * Exits the KVServer application
      */
-    public void close();
+    // TODO: Modify from kill to shutdown
+    public void shutDown();
+
+
+    /**
+     * Lock the KVServer for write operations
+     */
+    public void lockWrite();
+
+    /**
+     * Unlock the KVServer for write operations
+     */
+    public void unLockWrite();
+
+    /**
+     * Transfer a subset (range) of the KVServer’s data to
+     * another KVServer (reallocation before removing this server
+     * or adding a new KVServer to the ring);
+     * send a notification to the ECS, if data transfer is completed
+     * @param range
+     * @param server
+     */
+    public void moveData(byte[] range, String server);
+
+    /**
+     * Update the metadata repository of this server
+     * @param metadata
+     */
+    public void update(String metadata);
+
 }

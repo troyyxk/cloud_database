@@ -9,7 +9,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KVServer extends Thread implements IKVServer {
+public class KVServer implements IKVServer {
 
 	private static Logger logger = Logger.getRootLogger();
 
@@ -99,7 +99,7 @@ public class KVServer extends Thread implements IKVServer {
 	}
 
 	@Override
-    public void run(){
+    public void start(){
 		this.dao.clearCache();
 		running = initializeServer();
 
@@ -124,7 +124,7 @@ public class KVServer extends Thread implements IKVServer {
 	}
 
 	@Override
-    public void kill(){
+    public void shutDown(){
 		running = false;
 		try {
 			serverSocket.close();
@@ -138,10 +138,30 @@ public class KVServer extends Thread implements IKVServer {
 	}
 
 	@Override
-    public void close() {
+	public void lockWrite() {
+
+	}
+
+	@Override
+	public void unLockWrite() {
+
+	}
+
+	@Override
+	public void moveData(byte[] range, String server) {
+
+	}
+
+	@Override
+	public void update(String metadata) {
+
+	}
+
+	@Override
+	public void stop() {
 		running = false;
 		dao.flush();
-		kill();
+		shutDown();
 	}
 
 	private boolean initializeServer() {
