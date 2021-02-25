@@ -10,13 +10,17 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import logger.LogSetup;
 
+import javax.sound.sampled.Port;
+
 
 public class AllTests {
+
+	public static int PORT = 50000;
 
 	static {
 		try {
 			new LogSetup("logs/testing/test.log", Level.ERROR);
-			KVServer kvServer = new KVServer(50000, 10, "FIFO");
+			KVServer kvServer = new KVServer(PORT, 10, "FIFO");
 			new Thread(kvServer).start();
 		} catch (IOException e) {
 			e.printStackTrace();

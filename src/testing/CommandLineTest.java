@@ -2,6 +2,10 @@ package testing;
 import junit.framework.TestCase;
 import org.junit.Test;
 import app_kvClient.KVClient;
+
+
+import static testing.AllTests.PORT;
+
 public class CommandLineTest extends TestCase {
     String invalidOperation = "xxxx";
     private Exception validTestStatement(String testStatement) {
@@ -55,7 +59,7 @@ public class CommandLineTest extends TestCase {
 
     @Test
     public void testConnectValidStatement() {
-        assertNull(validTestStatement("connect 127.0.0.1 50000"));
+        assertNull(validTestStatement("connect 127.0.0.1 " + PORT));
     }
 
     @Test
