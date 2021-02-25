@@ -151,32 +151,30 @@ public class KVStore implements KVCommInterface {
 
 	@Override
 	public KVMessage put(String key, String value) throws Exception {
-		if (this.connWrapper == null) {
-			throw new IOException();
-		}
+//		if (this.connWrapper == null) {
+//			throw new IOException();
+//		}
 		KVMessageModel kvMsg = new KVMessageModel();
 		kvMsg.setStatusType(KVMessage.StatusType.PUT);
 		kvMsg.setKey(key);
 		kvMsg.setValue(value);
-		CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
-		handler.sendMsg(kvMsg);
-		KVMessage res = handler.getKVMsg();
-
+		KVMessage res = processMetaAndGetResponse(kvMsg, 0);
+//		CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
+//		handler.sendMsg(kvMsg);
+//		KVMessage res = handler.getKVMsg();
 		return res;
 	}
 
 	@Override
 	public KVMessage get(String key) throws Exception {
-		if (this.connWrapper == null) {
-			throw new IOException();
-		}
 		KVMessageModel kvMsg = new KVMessageModel();
 		kvMsg.setKey(key);
 		kvMsg.setValue("null");
 		kvMsg.setStatusType(KVMessage.StatusType.GET);
-		CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
-		handler.sendMsg(kvMsg);
-		KVMessage res = handler.getKVMsg();
+//		CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
+//		handler.sendMsg(kvMsg);
+//		KVMessage res = handler.getKVMsg();
+		KVMessage res = processMetaAndGetResponse(kvMsg, 0);
 		return res;
 	}
 
