@@ -57,8 +57,12 @@ public class FIFOCache implements ICache {
     @Override
     public void putKV(String key, String value) throws StorageFullException {
         if (!map.containsKey(key)) {
-            if (map.size() >= cacheSize) {
-                throw new StorageFullException();
+            if (map.size() >= cacheSize) {  // cache full
+                // remove the first node in linked list and map
+                String evict_key = evict();
+                LinkedNode evict_node = map.get(evict_key);
+                removeNode(evict_node);
+                map.remove(evict_key);
             }
             LinkedNode node = new LinkedNode(key, value);
             map.put(key, node);

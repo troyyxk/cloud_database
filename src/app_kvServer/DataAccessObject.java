@@ -84,36 +84,14 @@ public class DataAccessObject {
             return;
         }
 
+        cache.putKV(key, value);
         try {
-            cache.putKV(key, value);
-        } catch (StorageFullException storeFullEx) {
-            try {
-                cacheEvict();
-            } catch (IOException IOEx) {
-                logger.error("Unable to evict cache: " + key);
-                try {
-                    disk.putKV(key, value);
-                    logger.debug("Data put into disk due to cache eviction failur: " + key);
-                    return;
-                } catch (Exception ex) {
-                    logger.error("Unable to put key in both disk and cache: " + key);
-                    throw new IOException(ex);
-                }
-            }
-            // Cache eviction succeeded, try put to cache again
-            try {
-                cache.putKV(key, value);
-            } catch (Exception ex) {
-                logger.error("Unable to add to cache even after eviction succeeded: " + key);
-                try {
-                    disk.putKV(key, value);
-                    logger.debug("Unknown cache put failure: " + key);
-                } catch (Exception cacheFailureEx) {
-                    logger.error("Unable to put key in both disk and cache: " + key);
-                    throw new IOException(cacheFailureEx);
-                }
-            }
+            disk.putKV(key, value);
+        } catch (Exception cacheFailureEx) {
+            logger.error("Unable to put key in both disk and cache: " + key);
+            throw new IOException(cacheFailureEx);
         }
+
 
     }
 
