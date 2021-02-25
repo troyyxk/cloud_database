@@ -9,7 +9,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KVServer implements IKVServer {
+public class KVServer implements IKVServer, Runnable{
 
 	private static Logger logger = Logger.getRootLogger();
 
@@ -99,6 +99,7 @@ public class KVServer implements IKVServer {
 	}
 
 	@Override
+	// TODO: rename to start
     public void start(){
 		this.dao.clearCache();
 		running = initializeServer();
@@ -158,6 +159,7 @@ public class KVServer implements IKVServer {
 	}
 
 	@Override
+	// TODO: change to stop
 	public void stop() {
 		running = false;
 		dao.flush();
@@ -168,7 +170,7 @@ public class KVServer implements IKVServer {
 		logger.info("Initialize server ...");
 		try {
 			serverSocket = new ServerSocket(port);
-			logger.info("Server listening on port: "
+			logger.info("Server connecting on port: "
 					+ serverSocket.getLocalPort());
 
 		} catch (IOException e) {
@@ -215,5 +217,10 @@ public class KVServer implements IKVServer {
 	private static void printError(String err) {
 		logger.error(err);
 		System.out.println(err);
+	}
+
+	@Override
+	public void run() {
+		this.start();
 	}
 }
