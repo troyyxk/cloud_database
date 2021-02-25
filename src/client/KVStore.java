@@ -3,6 +3,7 @@ package client;
 import org.apache.log4j.Logger;
 import shared.CommunicationSockMessageHandler;
 import shared.CommunicationTextMessageHandler;
+import shared.ConnWrapper;
 import shared.messages.KVMessage;
 import shared.messages.KVMessageModel;
 
@@ -66,32 +67,34 @@ public class KVStore implements KVCommInterface {
 
 	@Override
 	public void connect() throws IOException, Exception {
-		if (this.connWrapper != null) {
-			closeSocket();
-		}
-		System.out.println("connecting...");
-		Socket newSocket = new Socket();
-		newSocket.setSoTimeout(FINAL_TIMEOUT);
-		newSocket.connect(new InetSocketAddress(this.targetAddress, this.port), FINAL_TIMEOUT);
-		this.connWrapper = new ClientConnWrapper(newSocket);
-		if (this.connWrapper.isValid()) {
-			CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
-//			this.storageMap.put(DEFAULT_SERVER_NAME, handler);
-			// send to every lines
-//			KVMessage message = handler.getKVMsg();
-//			if (message.getStatus().toString().equals(KVMessage.StatusType.GET_SUCCESS.toString())) {
-//				printInfo("Successfully get from server: " + message.getKey() + ": " + message.getValue());
-//				printInfo("Storage successfully connected to " + this.targetAddress + ":" + port);
-//			}
+//		System.out.println("connecting...");
+//		Socket newSocket = new Socket();
+//		newSocket.setSoTimeout(FINAL_TIMEOUT);
+//		newSocket.connect(new InetSocketAddress(this.targetAddress, this.port), FINAL_TIMEOUT);
+//		this.connWrapper = new ClientConnWrapper(newSocket);
+//		if (this.connWrapper.isValid()) {
+//			CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
+////			this.storageMap.put(DEFAULT_SERVER_NAME, handler);
+//			// send to every lines
+////			KVMessage message = handler.getKVMsg();
+////			if (message.getStatus().toString().equals(KVMessage.StatusType.GET_SUCCESS.toString())) {
+////				printInfo("Successfully get from server: " + message.getKey() + ": " + message.getValue());
+////				printInfo("Storage successfully connected to " + this.targetAddress + ":" + port);
+////			}
+////
+////			else {
+////				printError("Connection might have been possessed or some server internal errors, please try again");
+////			}
+//			handleConnectedChannel(handler);
+//		}
 //
-//			else {
-//				printError("Connection might have been possessed or some server internal errors, please try again");
-//			}
-			handleConnectedChannel(handler);
-		}
-
-		else {
-			printError("Connection is invalid!");
+//		else {
+//			printError("Connection is invalid!");
+//		}
+		if (this.storageMap.size() != 0) {
+			Map.Entry<String, KVStorageMetaInfo> info = this.storageMap.entrySet().iterator().next();
+			printInfo("Connecting to entry: " + info.getKey());
+			this.connectToChannel(info.getValue());
 		}
 	}
 	// TODO: migrate connect to this method
@@ -101,9 +104,10 @@ public class KVStore implements KVCommInterface {
 		Socket newSocket = new Socket();
 		newSocket.setSoTimeout(FINAL_TIMEOUT);
 		newSocket.connect(new InetSocketAddress(info.getAddress(), info.getPort()), FINAL_TIMEOUT);
-		this.connWrapper = new ClientConnWrapper(newSocket); // TODO: replace this.connWrapper to multiple wrapper in the map
-		if (this.connWrapper.isValid()) {
-			CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
+		ConnWrapper wrapper = new ClientConnWrapper(newSocket); // TODO: replace this.connWrapper to multiple wrapper in the map
+		if (wrapper.isValid()) {
+			CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(wrapper);
+			info.setNetwork(handler);
 //			this.storageMap.put(DEFAULT_SERVER_NAME, handler);
 			// send to every lines
 //			KVMessage message = handler.getKVMsg();
@@ -183,18 +187,19 @@ public class KVStore implements KVCommInterface {
 
 	private synchronized void closeSocket() {
 
-		if (connWrapper == null) return;
+		for (Map.Entry<String, KVStorageMetaInfo> infoSet: this.storageMap.entrySet()) {
+			String name = infoSet.getKey();
+			KVStorageMetaInfo info = infoSet.getValue();
+			try {
+				info.getNetwork().close();
+			}
 
-		try {
-			connWrapper.close();
+			catch (IOException e) {
+				globalLogger.error("Previous socket for : " + name + " cannot be closed, maybe it's alreacy broken");
+			}
 		}
 
-		catch (IOException e) {
-			globalLogger.error("Previous socket cannot be closed, maybe it's already broken");
-		}
-
-		finally {
-			connWrapper = null;
-		}
+		this.storageMap = new HashMap<>();
+		printInfo("All sockets have been successfully closed!");
 	}
 }
