@@ -25,7 +25,7 @@ public class ECSNode implements IECSNode, Comparable<ECSNode> {
 
     @Override
     public String[] getNodeHashRange() {
-        return new String[0];
+        return new String[]{this.startHash, this.endHash};
     }
 
     public void setAgentName(String agentName) {

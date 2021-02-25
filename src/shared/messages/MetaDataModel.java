@@ -28,6 +28,18 @@ public class MetaDataModel implements Metadata {
         }
     }
 
+    public void resetHashForMeta() {
+        List<IECSNode> alias = new ArrayList<>(metaStruct);
+        if (alias.size() == 0) return;
+        ECSNode fNode = (ECSNode) alias.get(0);
+        fNode.setStartHash(alias.get(alias.size() - 1).getNodeHashRange()[1]);
+        for (int i = 1; i < alias.size(); i++) {
+            ECSNode n = (ECSNode) alias.get(i);
+            n.setStartHash(alias.get(i - 1).getNodeHashRange()[1]);
+        }
+        this.metaStruct = new TreeSet<>(alias);
+    }
+
     @Override
     public String predecessor(String agentName) {
         List<IECSNode> iter = new ArrayList<>(metaStruct);
