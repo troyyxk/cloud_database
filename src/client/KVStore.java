@@ -1,11 +1,14 @@
 package client;
 
+import ecs.IECSNode;
 import org.apache.log4j.Logger;
 import shared.CommunicationSockMessageHandler;
 import shared.CommunicationTextMessageHandler;
 import shared.ConnWrapper;
 import shared.messages.KVMessage;
 import shared.messages.KVMessageModel;
+import shared.messages.MetaDataModel;
+import shared.messages.Metadata;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -45,7 +48,8 @@ public class KVStore implements KVCommInterface {
 			return port;
 		}
 	}
-	private final static String DEFAULT_SERVER_NAME = "server10";
+	private final static String DEFAULT_SERVER_NAME = "server1_0";
+	private final static int PROCESS_LIMIT = 100;
 	private static Logger globalLogger = Logger.getRootLogger();
 	private ExecutorService kvStoreThreadPool = Executors.newFixedThreadPool(5);
 	private String targetAddress;
@@ -53,6 +57,7 @@ public class KVStore implements KVCommInterface {
 	private ClientConnWrapper connWrapper = null;
 	private static final int FINAL_TIMEOUT = 1_0000;
 	private Map<String, KVStorageMetaInfo> storageMap = new HashMap<>();
+	private Metadata metadata;
 	/**
 	 * Initialize KVStore with address and port of KVServer
 	 * @param address the address of the KVServer
@@ -98,7 +103,7 @@ public class KVStore implements KVCommInterface {
 		}
 	}
 	// TODO: migrate connect to this method
-	private void connectToChannel(KVStorageMetaInfo info) throws IOException, Exception {
+	private void connectToChannel(KVStorageMetaInfo info) throws IOException {
 
 		System.out.println("connecting...");
 		Socket newSocket = new Socket();
@@ -201,5 +206,51 @@ public class KVStore implements KVCommInterface {
 
 		this.storageMap = new HashMap<>();
 		printInfo("All sockets have been successfully closed!");
+	}
+
+	private KVMessage processMetaAndGetResponse(KVMessage kvToProcess, int curTimes) {
+		if (curTimes > PROCESS_LIMIT) {
+			printError("Metadata updates too many times, something wrong might be happening to the server");
+			return null;
+		}
+		String agentName = null;
+		KVMessage result = null;
+
+		try {
+			if (metadata == null) {
+				agentName = DEFAULT_SERVER_NAME;
+				storageMap.get(agentName).getNetwork().sendMsg(kvToProcess);
+				result = storageMap.get(agentName).getNetwork().getKVMsg();
+			}
+
+			else {
+				IECSNode n = metadata.getNode(kvToProcess.getKey());
+				if (n == null) {
+					n = metadata.getMetaRaw().first();
+				}
+				printInfo("The server name chosen for this process is : " + n.getNodeName());
+				agentName = n.getNodeName();
+
+				if (!storageMap.containsKey(agentName) || storageMap.get(agentName) == null) {
+					KVStorageMetaInfo newInfo = new KVStorageMetaInfo(n.getNodeHost(), n.getNodePort());
+					connectToChannel(newInfo);
+					this.storageMap.put(n.getNodeName(), newInfo);
+				}
+				this.storageMap.get(n.getNodeName()).getNetwork().sendMsg(kvToProcess);
+				result = this.storageMap.get(n.getNodeName()).getNetwork().getKVMsg(); // get the procedure here
+			}
+
+			switch (result.getStatus()) {
+				case SERVER_NOT_RESPONSIBLE:
+					metadata = new MetaDataModel(result.getValue());
+					return processMetaAndGetResponse(kvToProcess, curTimes + 1);
+				default:
+					break;
+			}
+		} catch (IOException e) {
+			storageMap.remove(agentName);
+			printInfo("Server" + " " + agentName + "  might be crashed, please choose another server");
+		}
+		return result;
 	}
 }

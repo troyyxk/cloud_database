@@ -78,6 +78,21 @@ public class MetaDataModel implements Metadata {
         return this.metaStruct;
     }
 
+    @Override
+    public IECSNode getNode(String key) {
+        for (IECSNode n : metaStruct) {
+            if (n.getNodeName().equals(key)) {
+                return n;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void addNode(IECSNode node) {
+        this.metaStruct.add(node);
+    }
+
     private TreeSet<IECSNode> conertJsonToModel(String data) throws JsonParseException {
         // https://stackoverflow.com/questions/18397342/deserializing-generic-types-with-gson
         Type genericType = new TypeToken<TreeSet<ECSNode>>(){}.getType();
