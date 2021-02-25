@@ -58,24 +58,20 @@ public class KVServer implements IKVServer, Runnable{
 		}
 	}
 
-	@Override
-	public CacheStrategy getCacheStrategy() {
-		return dao.getCacheStrategy();
-	}
-
-	@Override
-	public int getCacheSize() {
-		return dao.getCacheSize();
-	}
-
-	@Override
-	public boolean inStorage(String key) {
+	private boolean inStorage(String key) {
 		return dao.inStorage(key);
 	}
 
-	@Override
-	public boolean inCache(String key) {
+	private boolean inCache(String key) {
 		return dao.inStorage(key);
+	}
+
+	private void clearCache() {
+		dao.clearCache();
+	}
+
+	private void clearStorage() {
+		dao.clearStorage();
 	}
 
 	@Override
@@ -88,20 +84,12 @@ public class KVServer implements IKVServer, Runnable{
 		dao.putKV(key, value);
 	}
 
-	@Override
-	public void clearCache() {
-		dao.clearCache();
-	}
 
-	@Override
-	public void clearStorage() {
-		dao.clearStorage();
-	}
 
 	@Override
 	// TODO: rename to start
     public void start(){
-		this.dao.clearCache();
+		clearCache();
 		running = initializeServer();
 
 		if(serverSocket != null) {
@@ -163,9 +151,9 @@ public class KVServer implements IKVServer, Runnable{
 	public void stop() {
 		running = false;
 		dao.flush();
-		shutDown();
 	}
 
+	// TODO: change to initKVServer(String metadata)
 	private boolean initializeServer() {
 		logger.info("Initialize server ...");
 		try {
