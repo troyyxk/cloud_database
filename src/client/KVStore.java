@@ -247,6 +247,9 @@ public class KVStore implements KVCommInterface {
 			}
 		} catch (IOException e) {
 			storageMap.remove(agentName);
+			if (metadata != null) {
+				metadata.removeNode(agentName);
+			}
 			printInfo("Server" + " " + agentName + "  might be crashed, please choose another server");
 		}
 		return result;

@@ -12,5 +12,6 @@ public interface Metadata {
     TreeSet<IECSNode> getMetaRaw();
     IECSNode getNode(String key);
     void addNode(IECSNode node);
+    IECSNode removeNode(String agentName);
     boolean isValid(); // if the metadata is valid
 }
