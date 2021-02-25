@@ -6,6 +6,7 @@ import client.KVStore;
 
 import junit.framework.TestCase;
 
+import static testing.AllTests.PORT;
 
 public class ConnectionTest extends TestCase {
 
@@ -14,7 +15,7 @@ public class ConnectionTest extends TestCase {
 		
 		Exception ex = null;
 		
-		KVStore kvClient = new KVStore("localhost", 50000);
+		KVStore kvClient = new KVStore("localhost", PORT);
 		try {
 			kvClient.connect();
 		} catch (Exception e) {
@@ -27,7 +28,7 @@ public class ConnectionTest extends TestCase {
 	
 	public void testUnknownHost() {
 		Exception ex = null;
-		KVStore kvClient = new KVStore("unknown", 50000);
+		KVStore kvClient = new KVStore("unknown", PORT);
 		
 		try {
 			kvClient.connect();

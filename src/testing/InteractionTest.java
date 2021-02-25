@@ -7,13 +7,14 @@ import junit.framework.TestCase;
 import shared.messages.KVMessage;
 import shared.messages.KVMessage.StatusType;
 
+import static testing.AllTests.PORT;
 
 public class InteractionTest extends TestCase {
 
 	private KVStore kvClient;
 	
 	public void setUp() {
-		kvClient = new KVStore("localhost", 50000);
+		kvClient = new KVStore("localhost", PORT);
 		try {
 			kvClient.connect();
 		} catch (Exception e) {
