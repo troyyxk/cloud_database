@@ -37,7 +37,7 @@ public class ClientConnWrapper implements ConnWrapper {
         if(rawSocket == null) {
             return false;
         }
-        boolean isV = this.rawSocket.getInetAddress().isReachable(TIME_WAIT);
+       boolean isV = this.rawSocket.getInetAddress().isReachable(TIME_WAIT);
         return isV;
     }
 

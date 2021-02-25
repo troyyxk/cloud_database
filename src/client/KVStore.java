@@ -10,16 +10,48 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class KVStore implements KVCommInterface {
+
+	static class KVStorageMetaInfo {
+		private String address;
+		private int port;
+
+		public CommunicationTextMessageHandler getNetwork() {
+			return network;
+		}
+
+		public void setNetwork(CommunicationTextMessageHandler network) {
+			this.network = network;
+		}
+
+		CommunicationTextMessageHandler network;
+
+		KVStorageMetaInfo(String address, int port) {
+			this.address = address;
+			this.port = port;
+		}
+
+		public String getAddress() {
+			return address;
+		}
+
+		public int getPort() {
+			return port;
+		}
+	}
+	private final static String DEFAULT_SERVER_NAME = "server10";
 	private static Logger globalLogger = Logger.getRootLogger();
 	private ExecutorService kvStoreThreadPool = Executors.newFixedThreadPool(5);
 	private String targetAddress;
 	private int port;
 	private ClientConnWrapper connWrapper = null;
 	private static final int FINAL_TIMEOUT = 1_0000;
+	private Map<String, KVStorageMetaInfo> storageMap = new HashMap<>();
 	/**
 	 * Initialize KVStore with address and port of KVServer
 	 * @param address the address of the KVServer
@@ -29,6 +61,7 @@ public class KVStore implements KVCommInterface {
 		this.targetAddress = address;
 		this.port = port;
 		globalLogger.info("New KvStore: " + address + ":"+ port + ">");
+		this.storageMap.put(DEFAULT_SERVER_NAME, new KVStorageMetaInfo(address, port));
 	}
 
 	@Override
@@ -43,20 +76,62 @@ public class KVStore implements KVCommInterface {
 		this.connWrapper = new ClientConnWrapper(newSocket);
 		if (this.connWrapper.isValid()) {
 			CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
-			KVMessage message = handler.getKVMsg();
-			if (message.getStatus().toString().equals(KVMessage.StatusType.GET_SUCCESS.toString())) {
-				printInfo("Successfully get from server: " + message.getKey() + ": " + message.getValue());
-				printInfo("Storage successfully connected to " + this.targetAddress + ":" + port);
-			}
-
-			else {
-				printError("Connection might have been possessed or some server internal errors, please try again");
-			}
-
+//			this.storageMap.put(DEFAULT_SERVER_NAME, handler);
+			// send to every lines
+//			KVMessage message = handler.getKVMsg();
+//			if (message.getStatus().toString().equals(KVMessage.StatusType.GET_SUCCESS.toString())) {
+//				printInfo("Successfully get from server: " + message.getKey() + ": " + message.getValue());
+//				printInfo("Storage successfully connected to " + this.targetAddress + ":" + port);
+//			}
+//
+//			else {
+//				printError("Connection might have been possessed or some server internal errors, please try again");
+//			}
+			handleConnectedChannel(handler);
 		}
 
 		else {
 			printError("Connection is invalid!");
+		}
+	}
+	// TODO: migrate connect to this method
+	private void connectToChannel(KVStorageMetaInfo info) throws IOException, Exception {
+
+		System.out.println("connecting...");
+		Socket newSocket = new Socket();
+		newSocket.setSoTimeout(FINAL_TIMEOUT);
+		newSocket.connect(new InetSocketAddress(info.getAddress(), info.getPort()), FINAL_TIMEOUT);
+		this.connWrapper = new ClientConnWrapper(newSocket); // TODO: replace this.connWrapper to multiple wrapper in the map
+		if (this.connWrapper.isValid()) {
+			CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
+//			this.storageMap.put(DEFAULT_SERVER_NAME, handler);
+			// send to every lines
+//			KVMessage message = handler.getKVMsg();
+//			if (message.getStatus().toString().equals(KVMessage.StatusType.GET_SUCCESS.toString())) {
+//				printInfo("Successfully get from server: " + message.getKey() + ": " + message.getValue());
+//				printInfo("Storage successfully connected to " + this.targetAddress + ":" + port);
+//			}
+//
+//			else {
+//				printError("Connection might have been possessed or some server internal errors, please try again");
+//			}
+			handleConnectedChannel(handler);
+		}
+
+		else {
+			printError("Connection is invalid!");
+		}
+	}
+
+	private void handleConnectedChannel(CommunicationTextMessageHandler handler) throws IOException {
+		KVMessage message = handler.getKVMsg();
+		if (message.getStatus().toString().equals(KVMessage.StatusType.GET_SUCCESS.toString())) {
+			printInfo("Successfully get from server: " + message.getKey() + ": " + message.getValue());
+			printInfo("Storage successfully connected to " + this.targetAddress + ":" + port);
+		}
+
+		else {
+			printError("Connection might have been possessed or some server internal errors, please try again");
 		}
 	}
 
