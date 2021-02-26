@@ -71,10 +71,10 @@ public interface IKVServer {
      * another KVServer (reallocation before removing this server
      * or adding a new KVServer to the ring);
      * send a notification to the ECS, if data transfer is completed
-     * @param range
+     * @param range array of 2 String, low and high
      * @param server
      */
-    public void moveData(String range, String server);
+    public void moveData(String[] range, String server);
 
     /**
      * Update the metadata repository of this server

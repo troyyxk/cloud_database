@@ -129,7 +129,7 @@ public class KVServer implements IKVServer, Runnable{
 	}
 
 	@Override
-	public void moveData(String range, String server) {
+	public void moveData(String[] range, String server) {
 
 	}
 
