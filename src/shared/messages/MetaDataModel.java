@@ -5,14 +5,13 @@ import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 import ecs.ECSNode;
 import ecs.IECSNode;
-import org.json.JSONObject;
+
 import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 
 public class MetaDataModel implements Metadata {
@@ -26,7 +25,7 @@ public class MetaDataModel implements Metadata {
     }
     public MetaDataModel(String metaData) {
         try {
-            this.metaStruct = this.conertJsonToModel(metaData);
+            this.metaStruct = MetaDataModel.ConvertJsonToModel(metaData);
             this.metaExists = true;
         }
 
@@ -144,9 +143,15 @@ public class MetaDataModel implements Metadata {
         return null;
     }
 
-    private TreeSet<IECSNode> conertJsonToModel(String data) throws JsonParseException {
+    public static TreeSet<IECSNode> ConvertJsonToModel(String data) throws JsonParseException {
         // https://stackoverflow.com/questions/18397342/deserializing-generic-types-with-gson
         Type genericType = new TypeToken<TreeSet<ECSNode>>(){}.getType();
         return new Gson().fromJson(data, genericType);
+    }
+
+    public static String ConvertModelToJson(MetaDataModel metadata) throws JsonParseException {
+        Type listType = new TypeToken<TreeSet<ECSNode>>(){}.getType();
+        String json = new Gson().toJson(metadata.getMetaRaw(), listType);
+        return json;
     }
 }
