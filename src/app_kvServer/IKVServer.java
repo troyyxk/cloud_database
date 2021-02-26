@@ -72,7 +72,7 @@ public interface IKVServer {
      * @param range
      * @param server
      */
-    public void moveData(byte[] range, String server);
+    public void moveData(String range, String server);
 
     /**
      * Update the metadata repository of this server

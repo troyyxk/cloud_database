@@ -13,12 +13,15 @@ public class KVServer implements IKVServer, Runnable{
 
 	private static Logger logger = Logger.getRootLogger();
 
+	// TODO: Also allow different address
 	private int port;
 
 	private List<KVClientConnection> connections = new ArrayList<>();
 	private ServerSocket serverSocket;
-	private boolean running;
 	private DataAccessObject dao;
+
+	private ServerState state;
+	private boolean running;
 
 	/**
 	 * For testing
@@ -84,29 +87,24 @@ public class KVServer implements IKVServer, Runnable{
 		dao.putKV(key, value);
 	}
 
-
-
 	@Override
-	// TODO: rename to start
-    public void start(){
-		clearCache();
-		running = initializeServer();
+    public void start() {
+		boolean running = initializeServer();
+		state.setRunning(running);
 
-		if(serverSocket != null) {
-			while(isRunning()){
-				try {
-					Socket client = serverSocket.accept();
-					KVClientConnection connection =
-							new KVClientConnection(client, dao);
-					new Thread(connection).start();
-					connections.add(connection);
-					logger.info("Connected to "
-							+ client.getInetAddress().getHostName()
-							+  " on port " + client.getPort());
-				} catch (IOException e) {
-					logger.error("Error! " +
-							"Unable to establish connection. \n", e);
-				}
+		while(serverSocket != null) {
+			try {
+				Socket client = serverSocket.accept();
+				KVClientConnection connection =
+						new KVClientConnection(client, dao, state);
+				new Thread(connection).start();
+				connections.add(connection);
+				logger.info("Connected to "
+						+ client.getInetAddress().getHostName()
+						+  " on port " + client.getPort());
+			} catch (IOException e) {
+				logger.error("Error! " +
+						"Unable to establish connection. \n", e);
 			}
 		}
 		logger.info("Server stopped.");
@@ -114,7 +112,7 @@ public class KVServer implements IKVServer, Runnable{
 
 	@Override
     public void shutDown(){
-		running = false;
+		state.setRunning(false);
 		try {
 			serverSocket.close();
 			for (KVClientConnection cc : connections) {
@@ -128,16 +126,16 @@ public class KVServer implements IKVServer, Runnable{
 
 	@Override
 	public void lockWrite() {
-
+		state.setWritable(false);
 	}
 
 	@Override
 	public void unLockWrite() {
-
+		state.setWritable(false);
 	}
 
 	@Override
-	public void moveData(byte[] range, String server) {
+	public void moveData(String range, String server) {
 
 	}
 
@@ -147,9 +145,8 @@ public class KVServer implements IKVServer, Runnable{
 	}
 
 	@Override
-	// TODO: change to stop
 	public void stop() {
-		running = false;
+		state.setRunning(false);
 		dao.flush();
 	}
 
@@ -169,10 +166,6 @@ public class KVServer implements IKVServer, Runnable{
 			return false;
 		}
 		return true;
-	}
-
-	private boolean isRunning() {
-		return this.running;
 	}
 
 	/**

@@ -1,16 +1,12 @@
 package app_kvServer;
 
-import app_kvServer.storage.KeyNotFoundException;
 import client.ClientConnWrapper;
 import org.apache.log4j.Logger;
 import shared.CommunicationTextMessageHandler;
 import shared.ConnWrapper;
 import shared.messages.KVMessageModel;
 
-import javax.xml.crypto.Data;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import shared.messages.KVMessage;
 
@@ -31,15 +27,17 @@ public class KVClientConnection implements Runnable {
 
 	private ConnWrapper socketWrapper;
 	private DataAccessObject dao;
+	private ServerState serverState;
 
 	/**
 	 * Constructs a new ClientConnection object for a given TCP socket.
 	 * @param clientSocket the Socket object for the client connection.
 	 */
-	public KVClientConnection(Socket clientSocket, DataAccessObject dao) throws IOException {
+	public KVClientConnection(Socket clientSocket, DataAccessObject dao, ServerState serverState) throws IOException {
 		this.socketWrapper = new ClientConnWrapper(clientSocket);
 		this.isOpen = true;
 		this.dao = dao;
+		this.serverState = serverState;
 	}
 
 	
@@ -55,7 +53,7 @@ public class KVClientConnection implements Runnable {
 		successMsg.setStatusType(KVMessage.StatusType.GET_SUCCESS);
 		try {
 			textComm.sendMsg(successMsg);
-			while(isOpen) {
+			while(isOpen && serverState.isRunning()) {
 				try {
 					KVMessage msg = textComm.getKVMsg();
 					KVMessageModel returnResult = new KVMessageModel();
@@ -65,6 +63,7 @@ public class KVClientConnection implements Runnable {
 					if (msg.getStatus().equals(KVMessage.StatusType.GET)) {
 						String key = msg.getKey();
 						String value;
+						// TODO: check whether in this server's hash range
 						try {
 							System.out.println("get request!");
 							value = dao.getKV(key);
@@ -86,9 +85,15 @@ public class KVClientConnection implements Runnable {
 						String key = msg.getKey();
 						String value = msg.getValue();
 						/*
+							Server write lock
+						 */
+						if (!serverState.isWritable()) {
+							returnResult.setStatusType(KVMessage.StatusType.SERVER_WRITE_LOCK);
+						}
+						/*
 							PUT request with null value means deletion
 						 */
-						if (value == null || value.equals("NULL") || value.equals("null")) {
+						else if (value == null || value.equals("NULL") || value.equals("null")) {
 							try {
 								dao.delete(key);
 								returnResult.setStatusType(KVMessage.StatusType.DELETE_SUCCESS);
@@ -136,7 +141,7 @@ public class KVClientConnection implements Runnable {
 				} catch (IOException ioe) {
 					logger.error("Error! Connection lost!");
 					isOpen = false;
-				}				
+				}
 			}
 			
 		} catch (IOException ioe) {
