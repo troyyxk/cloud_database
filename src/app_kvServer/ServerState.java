@@ -1,19 +1,32 @@
 package app_kvServer;
 
+import com.google.gson.JsonParseException;
+import org.apache.log4j.Logger;
+import shared.messages.MetaDataModel;
+
 /**
  * Represents the state of current server,
  */
 public class ServerState {
     private boolean running = false;
     private boolean writable = true;
-    private String metadata = null;
+    private MetaDataModel metadata = null;
+
+    private static final String EMPTY_JSON_ARRAY = "[]";
+
+    private static Logger logger = Logger.getRootLogger();
 
     public String getMetadata() {
-        return metadata;
+        try {
+            return MetaDataModel.ConvertModelToJson(metadata);
+        } catch (JsonParseException ex) {
+            logger.error("Cannot convert metadata to string" + ex.getMessage());
+            return EMPTY_JSON_ARRAY;
+        }
     }
 
     public void setMetadata(String metadata) {
-        this.metadata = metadata;
+        this.metadata = new MetaDataModel(metadata);
     }
 
     public boolean isRunning() {
