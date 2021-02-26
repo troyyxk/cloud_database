@@ -66,8 +66,10 @@ public class ECS {
         catch (NoSuchAlgorithmException e) {
             printError(e.getMessage());
         }
+    }
 
-
+    public void processWhenNodeFail(IECSNode n) {
+        // TODO: handle failure when listener nodes failed
     }
 
     private void initECSNodes(TreeSet<IECSNode> nodes) {

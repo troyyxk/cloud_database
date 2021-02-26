@@ -14,9 +14,7 @@ import java.util.List;
 public class KVServer implements IKVServer, Runnable{
 
 	private static Logger logger = Logger.getRootLogger();
-
 	private int port;
-
 	private List<KVClientConnection> connections = new ArrayList<>();
 	private ServerSocket serverSocket;
 	private DataAccessObject dao;

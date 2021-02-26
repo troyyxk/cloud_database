@@ -8,6 +8,13 @@ public class ECSNode implements IECSNode, Comparable<ECSNode> {
     private int port;
     private String hostName;
 
+    public ECSNode() {}
+    public ECSNode(String agentName, String hostName, int port, String hashVal) {
+        this.agentName = agentName;
+        this.hostName = hostName;
+        this.port = port;
+        this.endHash = hashVal;
+    }
     public String getStrategyName() {
         return strategyName;
     }
