@@ -15,7 +15,6 @@ public class KVServer implements IKVServer, Runnable{
 
 	private static Logger logger = Logger.getRootLogger();
 
-	// TODO: Also allow different address
 	private int port;
 
 	private List<KVClientConnection> connections = new ArrayList<>();
@@ -34,6 +33,7 @@ public class KVServer implements IKVServer, Runnable{
 	public KVServer(int port, int cacheSize, String strategy) {
 		this.port = port;
 		this.dao = new DataAccessObject(cacheSize, strategy);
+		this.state = new ServerState();
 	}
 
 	/**
@@ -45,6 +45,7 @@ public class KVServer implements IKVServer, Runnable{
 		int cacheSize = 4096;
 		String strategy = "FIFO";
 		this.dao = new DataAccessObject(cacheSize, strategy);
+		this.state = new ServerState();
 	}
 
 	@Override
@@ -75,7 +76,6 @@ public class KVServer implements IKVServer, Runnable{
 
 	@Override
     public void start() {
-		initKVServer(null);
 		state.setRunning(true);
 
 		while(serverSocket != null) {

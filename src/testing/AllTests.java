@@ -21,6 +21,7 @@ public class AllTests {
 		try {
 			new LogSetup("logs/testing/test.log", Level.ERROR);
 			KVServer kvServer = new KVServer(PORT, 10, "FIFO");
+			kvServer.initKVServer(null);
 			new Thread(kvServer).start();
 		} catch (IOException e) {
 			e.printStackTrace();
