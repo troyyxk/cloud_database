@@ -9,6 +9,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO: Add a threaded zookeeper listener
+
 public class KVServer implements IKVServer, Runnable{
 
 	private static Logger logger = Logger.getRootLogger();
@@ -46,7 +48,7 @@ public class KVServer implements IKVServer, Runnable{
 	}
 
 	@Override
-	public int getPort(){
+	public int getPort() {
 		return this.port;
 	}
 
@@ -61,22 +63,6 @@ public class KVServer implements IKVServer, Runnable{
 		}
 	}
 
-	private boolean inStorage(String key) {
-		return dao.inStorage(key);
-	}
-
-	private boolean inCache(String key) {
-		return dao.inStorage(key);
-	}
-
-	private void clearCache() {
-		dao.clearCache();
-	}
-
-	private void clearStorage() {
-		dao.clearStorage();
-	}
-
 	@Override
 	public String getKV(String key) throws Exception {
 		return dao.getKV(key);
@@ -89,6 +75,7 @@ public class KVServer implements IKVServer, Runnable{
 
 	@Override
     public void start() {
+		initKVServer(null);
 		state.setRunning(true);
 
 		while(serverSocket != null) {
@@ -130,7 +117,7 @@ public class KVServer implements IKVServer, Runnable{
 
 	@Override
 	public void unLockWrite() {
-		state.setWritable(false);
+		state.setWritable(true);
 	}
 
 	@Override
@@ -140,7 +127,7 @@ public class KVServer implements IKVServer, Runnable{
 
 	@Override
 	public void update(String metadata) {
-
+		state.setMetadata(metadata);
 	}
 
 	@Override
@@ -151,6 +138,8 @@ public class KVServer implements IKVServer, Runnable{
 
 	@Override
 	public boolean initKVServer(String metadata) {
+		state.setMetadata(metadata);
+
 		logger.info("Initialize server ...");
 		try {
 			serverSocket = new ServerSocket(port);

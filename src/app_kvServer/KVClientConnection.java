@@ -82,10 +82,8 @@ public class KVClientConnection implements Runnable {
 					 */
 					else if (!isResponsible(msg.getKey())) {
 						String key = msg.getKey();
-						String value = msg.getValue();
 						returnResult.setKey(key);
-						returnResult.setValue(value);
-						// TODO: returnResult set metadata
+						returnResult.setValue(serverState.getMetadata());
 						returnResult.setStatusType(KVMessage.StatusType.SERVER_NOT_RESPONSIBLE);
 					}
 					/*
@@ -115,10 +113,14 @@ public class KVClientConnection implements Runnable {
 						System.out.println("put request!");
 						String key = msg.getKey();
 						String value = msg.getValue();
+						returnResult.setKey(key);
+						returnResult.setValue(value);
 						/*
 							Server write lock
 						 */
 						if (!serverState.isWritable()) {
+							returnResult.setKey("write_lock");
+							returnResult.setValue("server in write lock");
 							returnResult.setStatusType(KVMessage.StatusType.SERVER_WRITE_LOCK);
 						}
 						/*
@@ -162,8 +164,7 @@ public class KVClientConnection implements Runnable {
 								}
 							}
 						}
-						returnResult.setKey(key);
-						returnResult.setValue(value);
+
 						textComm.sendMsg(returnResult);
 					}
 
