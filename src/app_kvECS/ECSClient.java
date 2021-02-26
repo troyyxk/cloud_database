@@ -3,9 +3,8 @@ package app_kvECS;
 import java.io.IOException;
 import java.util.*;
 
-import app_kvClient.KVClient;
-import com.sun.source.tree.Tree;
 import ecs.ECS;
+import ecs.ECSNode;
 import ecs.IECSNode;
 import logger.LogSetup;
 import org.apache.log4j.Level;
@@ -14,6 +13,9 @@ import org.apache.log4j.Logger;
 public class ECSClient implements IECSClient {
     private static final String ECS_LOG_CONFIGURATION_DIR = "logs/ecs.log";
     private static Logger globalLogger = Logger.getRootLogger();
+    private static final int TIMEOUT = 20000;
+
+
     private ECS ecs;
     private boolean serviceUp = true;
     private static final List<String> strategies = new ArrayList<>();
@@ -25,33 +27,71 @@ public class ECSClient implements IECSClient {
         strategies.add("LRU");
         strategies.add("LFU");
         strategies.add("FIFO");
+        strategies.add("NONE");
     }
 
     @Override
     public boolean start() {
-        return ecs.start();
+        if (ecs.start()) {
+            serviceUp = true;
+            return true;
+        }
+        return false;
     }
 
     @Override
     public boolean stop() {
-        return ecs.stop();
+        if (ecs.stop()) {
+            serviceUp = false;
+            return true;
+        }
+        return false;
     }
 
     @Override
     public boolean shutdown() {
-        // TODO
+        if (ecs.shutdown()) {
+            serviceUp = false;
+            return true;
+        }
         return false;
     }
 
     @Override
     public IECSNode addNode(String cacheStrategy, int cacheSize) {
-        TreeSet<IECSNode> nodes = ecs.setupNewServers(1, cacheStrategy, cacheSize);
-        return nodes.first();
+        Collection<IECSNode> nodes = addNodes(1, cacheStrategy, cacheSize);
+        return nodes.iterator().next();
     }
 
     @Override
     public Collection<IECSNode> addNodes(int count, String cacheStrategy, int cacheSize) {
-        return ecs.setupNewServers(count, cacheStrategy, cacheSize);
+        Collection<IECSNode> nodes = setupNodes(count, cacheStrategy, cacheSize);
+        if (nodes != null) {
+            ecs.initECSNodes((TreeSet<IECSNode>) nodes);
+
+            try {
+                this.awaitNodes(count, TIMEOUT);
+            } catch (Exception e) {
+                printError(e.getMessage());
+            }
+
+            ecs.addListeners(nodes);
+
+            ecs.updateServerMeta();
+
+            // TODO: Update data?
+            ecs.updateServerData();
+
+            if (serviceUp) {
+                start();
+            }
+
+        }
+        else {
+            printError("Not enough server available to allocate new nodes");
+        }
+
+        return nodes;
     }
 
     @Override
@@ -62,11 +102,13 @@ public class ECSClient implements IECSClient {
     @Override
     public boolean awaitNodes(int count, int timeout) throws Exception {
         // TODO: count
-        return ecs.awaitNodes(timeout);
+        ecs.awaitNodes(timeout);
+        return true;
     }
 
     @Override
     public boolean removeNodes(Collection<String> nodeNames) {
+        ecs.removeListeners(nodeNames);
         return ecs.removeServers(nodeNames);
     }
 
@@ -83,7 +125,12 @@ public class ECSClient implements IECSClient {
 
     @Override
     public IECSNode getNodeByKey(String Key) {
-        // TODO
+        TreeSet<IECSNode> allRunningNodes = ecs.getServers();
+        for (IECSNode node : allRunningNodes) {
+            if (((ECSNode)node).contains(Key)) {
+                return node;
+            }
+        }
         return null;
     }
 
@@ -156,7 +203,7 @@ public class ECSClient implements IECSClient {
 
         else if (option.equals("addnode")) {
             if (args.length != 3) {
-                printError("addNode <strategy> <cache_size>");
+                printError("addnode <strategy> <cache_size>");
                 return;
             }
             String strategy = args[1];
@@ -193,12 +240,15 @@ public class ECSClient implements IECSClient {
             final String agentName = args[1];
             List<String> nodes = new ArrayList(){{add(agentName);}};
             if (!this.removeNodes(nodes)) {
-                printError("Fail to remove one node!");
+                printError("Fail to remove node!");
             }
 
             else {
                 printInfo("Node " + agentName + " got successfully removed");
             }
+        }
+        else {
+            unknown_respond();
         }
     }
 

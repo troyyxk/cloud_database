@@ -9,10 +9,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Scanner;
-import java.util.TreeSet;
+import java.util.*;
 
 public class ECS {
     private static Logger globalLogger = Logger.getRootLogger();
@@ -26,6 +23,7 @@ public class ECS {
     private MetaDataModel metaData;
     private TreeSet<IECSNode> managedServers = new TreeSet<>();
     private ECSzkWatcher watcher;
+    private HashMap<String, ECSListener> listeners;
     private ECSClient client;
 
     public ECS(String zHostName, int zPort, String configFileName, ECSClient client) {
@@ -69,10 +67,17 @@ public class ECS {
     }
 
     public void processWhenNodeFail(IECSNode n) {
-        // TODO: handle failure when listener nodes failed
+        ArrayList<String> list = new ArrayList<>();
+        list.add(n.getNodeName());
+
+        removeServers(list);
+        listeners.remove(n.getNodeName());
+
+        // TODO: Should we try to bring up server when node fail?
+        client.addNodes(1, ((ECSNode) n).getStrategyName(), ((ECSNode) n).getCacheSize());
     }
 
-    private void initECSNodes(TreeSet<IECSNode> nodes) {
+    public void initECSNodes(TreeSet<IECSNode> nodes) {
         watcher.setSemaphore(nodes.size());
         for (IECSNode node : nodes) {
             ECSNode eNode = (ECSNode) node;
@@ -192,44 +197,38 @@ public class ECS {
         return true;
     }
 
-//    public boolean shutdown() {
-//        removeDetectors(metaData.getNameList());
-//
-//        boolean flag = watcher.deleteAllNodes(metaData.getMetaRaw());
-//        watcher.releaseConnection();
-//        return flag;
-//    }
+    public boolean shutdown() {
+        removeListeners(metaData.getNameList());
+
+        boolean flag = watcher.deleteAllNodes(metaData.getMetaRaw());
+        watcher.releaseConnection();
+        return flag;
+    }
 
     /**
      * Following functions will interact with ECSDetector
      */
 
-//    public void addDetectors(Collection<IECSNode> list) {
-//
-//        for (IECSNode node : list) {
-//            ECSDetector detector = new ECSDetector(logger, this, node);
-//            detectors.put(node.getNodeName(), detector);
-//            new Thread(detector).start();
-//        }
-//    }
-//
-//    public void removeDetectors(Collection<String> list) {
-//        for (String node : list) {
-//            ECSDetector detector = detectors.remove(node);
-//            if (detector != null)
-//                detector.stop();
-//        }
-//    }
-//
-//    public void handleFailure(IECSNode node) {
-//        ArrayList<String> list = new ArrayList<>();
-//        list.add(node.getNodeName());
-//
-//        removeServers(list, false);
-//        detectors.remove(node.getNodeName());
-//
-//        client.addNodes(1, ((ECSNode) node).getStrategyName(), ((ECSNode) node).getCacheSize();
-//    }
+    public void addListeners(Collection<IECSNode> list) {
+        for (IECSNode node : list) {
+
+            ECSListener listener = new ECSListener(this, node);
+            String nodeName = node.getNodeName();
+            if (nodeName == null) {
+                printError("Null here");
+            }
+            listeners.put(node.getNodeName(), listener);
+            new Thread(listener).start();
+        }
+    }
+
+    public void removeListeners(Collection<String> list) {
+        for (String node : list) {
+            ECSListener listener = listeners.remove(node);
+            if (listener != null)
+                listener.stop();
+        }
+    }
 
     private void printError(String err) {
         globalLogger.error(err);

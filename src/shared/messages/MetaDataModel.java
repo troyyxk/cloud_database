@@ -102,7 +102,7 @@ public class MetaDataModel implements Metadata {
     @Override
     public IECSNode queryNodeByKey(String key) {
         try {
-            String md5Key = md5Encrypt(key);
+            String md5Key = MetaDataModel.MD5Encrypt(key);
             for (IECSNode n : metaStruct) {
                 ECSNode nN = (ECSNode) n;
                 if (nN.md5MatchMe(md5Key)) {
@@ -118,7 +118,7 @@ public class MetaDataModel implements Metadata {
         return null;
     }
 
-    public String md5Encrypt(String keyToEncrypt) throws NoSuchAlgorithmException {
+    public static String MD5Encrypt(String keyToEncrypt) throws NoSuchAlgorithmException {
         //https://www.baeldung.com/java-md5
         MessageDigest md5Result = MessageDigest.getInstance("MD5");
         byte[] messageDigest = md5Result.digest(keyToEncrypt.getBytes());

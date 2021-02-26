@@ -1,7 +1,9 @@
 package ecs;
 
+import shared.messages.MetaDataModel;
+
 public class ECSNode implements IECSNode, Comparable<ECSNode> {
-    private String agentName;
+    private String agentName = "DEFAULT_AGENTNAME";
     private String startHash;
     private String endHash;
     private int cacheSize;
@@ -90,6 +92,15 @@ public class ECSNode implements IECSNode, Comparable<ECSNode> {
         else {
             return md5.compareTo(startHash) >= 0 && md5.compareTo(endHash) < 0;
         }
+    }
+
+    public boolean contains(String key) {
+        try {
+            return md5MatchMe(MetaDataModel.MD5Encrypt(key));
+        } catch (Exception ex) {
+            return false;
+        }
+
     }
 
     @Override
