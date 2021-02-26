@@ -40,6 +40,14 @@ public class KVClientConnection implements Runnable {
 		this.serverState = serverState;
 	}
 
+	/**
+	 * @return whether key belongs to the data subset
+	 * that server is responsible for
+	 */
+	private boolean isResponsible(String key) {
+		return true;
+	}
+
 	
 	/**
 	 * Initializes and starts the client connection. 
@@ -68,6 +76,17 @@ public class KVClientConnection implements Runnable {
 						returnResult.setValue(value);
 						returnResult.setStatusType(KVMessage.StatusType.SERVER_STOPPED);
 						textComm.sendMsg(returnResult);
+					}
+					/*
+						Server not responsible for the key
+					 */
+					else if (!isResponsible(msg.getKey())) {
+						String key = msg.getKey();
+						String value = msg.getValue();
+						returnResult.setKey(key);
+						returnResult.setValue(value);
+						// TODO: returnResult set metadata
+						returnResult.setStatusType(KVMessage.StatusType.SERVER_NOT_RESPONSIBLE);
 					}
 					/*
 						Handle GET request
