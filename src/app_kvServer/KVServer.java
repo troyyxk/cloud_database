@@ -42,6 +42,8 @@ public class KVServer implements IKVServer, Runnable{
 		this.zkHostname = zkHostname;
 		this.zkPort = port;
 		this.serverName = serverName;
+		this.state.setServerName(serverName);
+		// TODO: initKVServer here??? Maybe ask Zk for server name
 	}
 
 	/**
@@ -189,6 +191,7 @@ public class KVServer implements IKVServer, Runnable{
 				String zkHostName = args[3];
 				int zkPort = Integer.parseInt(args[4]);
 				String agentName = args[5];
+				// TODO: might need to initKVServer here
 				server.initZkListener(zkHostName, zkPort, agentName);
 				server.start();
 			}

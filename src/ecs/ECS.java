@@ -3,21 +3,27 @@ package ecs;
 import app_kvECS.ECSClient;
 import org.apache.log4j.Logger;
 import shared.messages.MetaDataModel;
-import shared.messages.Metadata;
 import shared.util.ECSUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Scanner;
 import java.util.TreeSet;
 
 public class ECS {
     private static Logger globalLogger = Logger.getRootLogger();
+
+    private static final String ROOT_PATH = "/ecs";
+
+    private static final int TIME_OUT = 100000;
+
     private String zHostname;
     private int zPort;
-    private Metadata metaData;
+    private MetaDataModel metaData;
     private TreeSet<IECSNode> managedServers = new TreeSet<>();
     private ECSzkWatcher watcher;
     private ECSClient client;
@@ -27,24 +33,6 @@ public class ECS {
         this.metaData = new MetaDataModel();
         this.watcher = new ECSzkWatcher();
         this.client = client;
-    }
-
-    private void initECSNodes(TreeSet<IECSNode> nodes) {
-        watcher.setSemaphore(nodes.size());
-        for (IECSNode node : nodes) {
-            ECSNode eNode = (ECSNode) node;
-            String startScript = String.format("ssh -n %s nohup java -jar ./m2-server.jar %s %s %s %s %s %s &",
-                    node.getNodeHost(), node.getNodePort(),
-                    ((ECSNode) node).getCacheSize(),
-                    ((ECSNode) node).getStrategyName(), zHostname, zPort,
-                    node.getNodeName());
-            try {
-                ECSUtil.execCommand(startScript);
-            }
-            catch (IOException e) {
-                printError("Failed to start the server: " + node.getNodeName());
-            }
-        }
     }
 
     private void loadWithFile(String configFileName) {
@@ -81,6 +69,165 @@ public class ECS {
 
 
     }
+
+    private void initECSNodes(TreeSet<IECSNode> nodes) {
+        watcher.setSemaphore(nodes.size());
+        for (IECSNode node : nodes) {
+            ECSNode eNode = (ECSNode) node;
+            String startScript = String.format("ssh -n %s nohup java -jar ./m2-server.jar %s %s %s %s %s %s &",
+                    node.getNodeHost(), node.getNodePort(),
+                    ((ECSNode) node).getCacheSize(),
+                    ((ECSNode) node).getStrategyName(), zHostname, zPort,
+                    node.getNodeName());
+            try {
+                ECSUtil.execCommand(startScript);
+            }
+            catch (IOException e) {
+                printError("Failed to start the server: " + node.getNodeName());
+            }
+        }
+    }
+
+    public void broadcastMeta() {
+        watcher.writeData(ROOT_PATH, MetaDataModel.ConvertModelToJson(metaData));
+    }
+
+    public void updateServerMeta() {
+        printInfo("Updating metadata");
+        watcher.setSemaphore(metaData.getMetaRaw().size());
+        broadcastMeta();
+        awaitNodes(TIME_OUT);
+
+        printInfo("Finished metadata update");
+    }
+
+    public void updateServerData() {
+        printInfo("Updating server data");
+
+        watcher.setSemaphore(metaData.getMetaRaw().size());
+
+        broadcastMeta();
+
+        awaitNodes(TIME_OUT);
+
+        printInfo("Finished server data update");
+    }
+
+
+    public boolean awaitNodes(int timeout) {
+        return watcher.awaitNodes(timeout);
+    }
+
+
+    public TreeSet<IECSNode> setupNewServers(int count, String cacheStrategy, int cacheSize) {
+
+        if (managedServers.size() < count) {
+            printError("Do not have enough servers");
+            return null;
+        }
+
+
+        TreeSet<IECSNode> list = new TreeSet<>();
+
+        for (int i = 0; i < count; i++) {
+            ECSNode node = (ECSNode) managedServers.pollFirst();
+            node.setCacheSize(cacheSize);
+            node.setStrategyName(cacheStrategy);
+            list.add(node);
+            metaData.addNode(node);
+            watcher.watchNewNode(node.getNodeName());
+        }
+
+        metaData.resetHashForMeta();
+
+        return list;
+    }
+
+    public boolean removeServers(Collection<String> nodeNames) {
+
+        for (String name : nodeNames) {
+            IECSNode node = metaData.removeNode(name);
+        }
+
+        metaData.resetHashForMeta();
+
+        broadcastMeta();
+
+
+        for (String name : nodeNames) {
+            watcher.deleteNode(ROOT_PATH + "/" + name);
+        }
+
+        updateServerMeta();
+
+        return true;
+    }
+
+
+    public TreeSet<IECSNode> getServers() {
+        return metaData.getMetaRaw();
+    }
+
+
+
+    public boolean start() {
+
+        printInfo("Starting servers");
+
+        watcher.setSemaphore(metaData.getMetaRaw().size());
+
+        broadcastMeta();
+
+        awaitNodes(TIME_OUT);
+
+        printInfo("All server started");
+
+        return true;
+    }
+
+    public boolean stop() {
+        broadcastMeta();
+        return true;
+    }
+
+//    public boolean shutdown() {
+//        removeDetectors(metaData.getNameList());
+//
+//        boolean flag = watcher.deleteAllNodes(metaData.getMetaRaw());
+//        watcher.releaseConnection();
+//        return flag;
+//    }
+
+    /**
+     * Following functions will interact with ECSDetector
+     */
+
+//    public void addDetectors(Collection<IECSNode> list) {
+//
+//        for (IECSNode node : list) {
+//            ECSDetector detector = new ECSDetector(logger, this, node);
+//            detectors.put(node.getNodeName(), detector);
+//            new Thread(detector).start();
+//        }
+//    }
+//
+//    public void removeDetectors(Collection<String> list) {
+//        for (String node : list) {
+//            ECSDetector detector = detectors.remove(node);
+//            if (detector != null)
+//                detector.stop();
+//        }
+//    }
+//
+//    public void handleFailure(IECSNode node) {
+//        ArrayList<String> list = new ArrayList<>();
+//        list.add(node.getNodeName());
+//
+//        removeServers(list, false);
+//        detectors.remove(node.getNodeName());
+//
+//        client.addNodes(1, ((ECSNode) node).getStrategyName(), ((ECSNode) node).getCacheSize();
+//    }
 
     private void printError(String err) {
         globalLogger.error(err);

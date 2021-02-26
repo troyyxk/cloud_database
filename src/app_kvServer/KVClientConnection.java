@@ -1,6 +1,7 @@
 package app_kvServer;
 
 import client.ClientConnWrapper;
+import ecs.IECSNode;
 import org.apache.log4j.Logger;
 import shared.CommunicationTextMessageHandler;
 import shared.ConnWrapper;
@@ -9,6 +10,7 @@ import shared.messages.KVMessageModel;
 import java.io.IOException;
 import java.net.Socket;
 import shared.messages.KVMessage;
+import shared.messages.Metadata;
 
 /**
  * Represents a connection end point for a particular client that is 
@@ -44,8 +46,19 @@ public class KVClientConnection implements Runnable {
 	 * @return whether key belongs to the data subset
 	 * that server is responsible for
 	 */
+	// TODO: Fix test cases failed due to no metadata/server name
 	private boolean isResponsible(String key) {
 		return true;
+//		try{
+//			Metadata metadata = serverState.getMetadataModel();
+//			IECSNode n = metadata.queryNodeByKey(key);
+//			if (serverState.getServerName().equals(n.getNodeName())) {
+//				return true;
+//			}
+//		} catch (NullPointerException ex) {
+//			logger.error("Missing server metadata/name, cannot check whether responsible for incoming key");
+//		}
+//		return false;
 	}
 
 	
@@ -83,7 +96,7 @@ public class KVClientConnection implements Runnable {
 					else if (!isResponsible(msg.getKey())) {
 						String key = msg.getKey();
 						returnResult.setKey(key);
-						returnResult.setValue(serverState.getMetadata());
+						returnResult.setValue(serverState.getMetadataString());
 						returnResult.setStatusType(KVMessage.StatusType.SERVER_NOT_RESPONSIBLE);
 					}
 					/*
@@ -92,7 +105,6 @@ public class KVClientConnection implements Runnable {
 					else if (msg.getStatus().equals(KVMessage.StatusType.GET)) {
 						String key = msg.getKey();
 						String value;
-						// TODO: check whether in this server's hash range
 						try {
 							System.out.println("get request!");
 							value = dao.getKV(key);

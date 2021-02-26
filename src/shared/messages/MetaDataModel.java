@@ -143,6 +143,14 @@ public class MetaDataModel implements Metadata {
         return null;
     }
 
+    public ArrayList<String> getNameList(){
+        ArrayList<String> list = new ArrayList<>();
+        for(IECSNode node : metaStruct)
+            list.add(node.getNodeName());
+
+        return list;
+    }
+
     public static TreeSet<IECSNode> ConvertJsonToModel(String data) throws JsonParseException {
         // https://stackoverflow.com/questions/18397342/deserializing-generic-types-with-gson
         Type genericType = new TypeToken<TreeSet<ECSNode>>(){}.getType();

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.*;
 
 import app_kvClient.KVClient;
+import com.sun.source.tree.Tree;
 import ecs.ECS;
 import ecs.IECSNode;
 import logger.LogSetup;
@@ -25,16 +26,15 @@ public class ECSClient implements IECSClient {
         strategies.add("LFU");
         strategies.add("FIFO");
     }
+
     @Override
     public boolean start() {
-        // TODO
-        return false;
+        return ecs.start();
     }
 
     @Override
     public boolean stop() {
-        // TODO
-        return false;
+        return ecs.stop();
     }
 
     @Override
@@ -45,38 +45,40 @@ public class ECSClient implements IECSClient {
 
     @Override
     public IECSNode addNode(String cacheStrategy, int cacheSize) {
-        // TODO
-        return null;
+        TreeSet<IECSNode> nodes = ecs.setupNewServers(1, cacheStrategy, cacheSize);
+        return nodes.first();
     }
 
     @Override
     public Collection<IECSNode> addNodes(int count, String cacheStrategy, int cacheSize) {
-        // TODO
-        return null;
+        return ecs.setupNewServers(count, cacheStrategy, cacheSize);
     }
 
     @Override
     public Collection<IECSNode> setupNodes(int count, String cacheStrategy, int cacheSize) {
-        // TODO
-        return null;
+        return ecs.setupNewServers(count, cacheStrategy, cacheSize);
     }
 
     @Override
     public boolean awaitNodes(int count, int timeout) throws Exception {
-        // TODO
-        return false;
+        // TODO: count
+        return ecs.awaitNodes(timeout);
     }
 
     @Override
     public boolean removeNodes(Collection<String> nodeNames) {
-        // TODO
-        return false;
+        return ecs.removeServers(nodeNames);
     }
 
     @Override
     public Map<String, IECSNode> getNodes() {
-        // TODO
-        return null;
+        TreeSet<IECSNode> nodes = ecs.getServers();
+        Map<String, IECSNode> map = new TreeMap<>();
+        for (Iterator<IECSNode> it = nodes.iterator(); it.hasNext(); ) {
+            IECSNode node = it.next();
+            map.put(node.getNodeName(), node);
+        }
+        return map;
     }
 
     @Override
