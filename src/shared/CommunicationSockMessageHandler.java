@@ -91,4 +91,10 @@ public class CommunicationSockMessageHandler implements ICommunicationSockHandle
         globalLogger.info("Receive message:\t '" + newMsg);
         return newMsg;
     }
+
+    @Override
+    public void close() throws IOException {
+        if (this.sockWrapper == null) return;
+        this.sockWrapper.close();
+    }
 }
