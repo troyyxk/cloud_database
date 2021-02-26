@@ -19,6 +19,10 @@ public class MetaDataModel implements Metadata {
     private TreeSet<IECSNode> metaStruct;
     private boolean metaExists = false;
 
+    public MetaDataModel(TreeSet<IECSNode> nodes) {
+        this.metaStruct = nodes;
+    }
+
     public MetaDataModel() {
         this.metaStruct = new TreeSet<>();
         resetHashForMeta();
