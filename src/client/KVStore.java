@@ -78,10 +78,6 @@ public class KVStore implements KVCommInterface {
 		CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
 		handler.sendMsg(kvMsg);
 		KVMessage res = handler.getKVMsg();
-		// TODO: Handle SERVER NOT RESPONSIBLE
-		if (res.getStatus().equals(KVMessage.StatusType.SERVER_NOT_RESPONSIBLE)) {
-			metadata = null;
-		}
 		return res;
 	}
 
@@ -97,10 +93,6 @@ public class KVStore implements KVCommInterface {
 		CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
 		handler.sendMsg(kvMsg);
 		KVMessage res = handler.getKVMsg();
-		// TODO: Handle SERVER NOT RESPONSIBLE
-		if (res.getStatus().equals(KVMessage.StatusType.SERVER_NOT_RESPONSIBLE)) {
-			metadata = null;
-		}
 		return res;
 	}
 
