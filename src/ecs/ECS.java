@@ -23,7 +23,7 @@ public class ECS {
     private MetaDataModel metaData;
     private TreeSet<IECSNode> managedServers = new TreeSet<>();
     private ECSzkWatcher watcher;
-    private HashMap<String, ECSListener> listeners;
+    private HashMap<String, ECSListener> listeners = new HashMap<>();
     private ECSClient client;
 
     public ECS(String zHostName, int zPort, String configFileName, ECSClient client) {
@@ -206,7 +206,7 @@ public class ECS {
     }
 
     /**
-     * Following functions will interact with ECSDetector
+     * Following functions will interact with ECS Listener
      */
 
     public void addListeners(Collection<IECSNode> list) {
@@ -217,6 +217,7 @@ public class ECS {
             if (nodeName == null) {
                 printError("Null here");
             }
+            printError("Null listener");
             listeners.put(node.getNodeName(), listener);
             new Thread(listener).start();
         }
