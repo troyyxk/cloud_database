@@ -246,7 +246,6 @@ public class LFUCacheTest extends TestCase{
             }
             cache.putKV("key6", "value6");
             cache.putKV("key7", "value7");
-
             assertEquals("key7", cache.evict());
         } catch (Exception ex) {
             e = ex;
