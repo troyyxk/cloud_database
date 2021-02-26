@@ -17,7 +17,13 @@ import java.util.TreeSet;
 
 public class MetaDataModel implements Metadata {
     private TreeSet<IECSNode> metaStruct;
-    private boolean metaExists;
+    private boolean metaExists = false;
+
+    public MetaDataModel() {
+        this.metaStruct = new TreeSet<>();
+        resetHashForMeta();
+        this.metaExists = true;
+    }
     public MetaDataModel(String metaData) {
         try {
             this.metaStruct = this.conertJsonToModel(metaData);
@@ -109,7 +115,7 @@ public class MetaDataModel implements Metadata {
         return null;
     }
 
-    private String md5Encrypt(String keyToEncrypt) throws NoSuchAlgorithmException {
+    public String md5Encrypt(String keyToEncrypt) throws NoSuchAlgorithmException {
         //https://www.baeldung.com/java-md5
         MessageDigest md5Result = MessageDigest.getInstance("MD5");
         byte[] messageDigest = md5Result.digest(keyToEncrypt.getBytes());
