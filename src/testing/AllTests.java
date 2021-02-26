@@ -35,6 +35,8 @@ public class AllTests {
 		clientSuite.addTestSuite(DAOTest.class);
 		clientSuite.addTestSuite(CommandLineTest.class);
 		clientSuite.addTestSuite(MetaTest.class);
+		clientSuite.addTestSuite(EcsNodeTest.class);
+		clientSuite.addTestSuite(ECSClientTest.class);
 		return clientSuite;
 	}
 	
