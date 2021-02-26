@@ -4,7 +4,9 @@ import app_kvServer.IKVServer;
 import app_kvServer.storage.KeyNotFoundException;
 import app_kvServer.storage.StorageFullException;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,10 +18,11 @@ public class LFUCache implements ICache {
      * makes eviction O(1)
      */
     private int minFreq;
-    private Map<Integer, LRUCache> freqMap;
-    private Map<String, FreqLinkedNode> keyMap;
+    private HashMap<String, String> keyToVal;
+    private HashMap<String, Integer> keyToCount;
+    private HashMap<Integer, LinkedHashSet<String>> countToLRUKeys;
 
-    class FreqLinkedNode extends LinkedNode {
+    class   FreqLinkedNode extends LinkedNode {
         protected int freq;
         FreqLinkedNode(String key, String value) {
             super(key, value);
@@ -33,16 +36,13 @@ public class LFUCache implements ICache {
      *           to keep in-memory
      */
     public LFUCache(int cacheSize) {
+        this.minFreq = -1;
         this.cacheSize = cacheSize;
-        this.freqMap = new ConcurrentHashMap<>();
-        /*
-         Put dummy freq level for ease of manipulation.
-         Less code if freqLinkedNode can start with 0 freq.
-         */
-        this.freqMap.put(0, new LRUCache(1));
-        this.minFreq = 0;
-        this.keyMap = new ConcurrentHashMap<>();
+        this.keyToVal = new HashMap<>();
+        this.keyToCount = new HashMap<>();
+        this.countToLRUKeys = new HashMap<>();
     }
+
     @Override
     public IKVServer.CacheStrategy getCacheStrategy() {
         return IKVServer.CacheStrategy.LFU;
@@ -50,112 +50,109 @@ public class LFUCache implements ICache {
 
     @Override
     public int getCacheSize() {
-        return this.keyMap.size();
+        return this.keyToVal.size();
     }
 
     @Override
     public boolean contains(String key) {
-        return keyMap.containsKey(key);
+        return this.keyToVal.containsKey(key);
     }
 
     @Override
     public String getKV(String key) throws KeyNotFoundException {
-        if (!keyMap.containsKey(key)) {
-            throw new KeyNotFoundException();
+        if(!keyToVal.containsKey(key)){
+            throw  new KeyNotFoundException();
         }
-        FreqLinkedNode node = keyMap.get(key);
-        incrFreq(node);
-        return node.value;
-    }
-
-    void incrFreq(FreqLinkedNode node) {
-        LRUCache freqKCache = freqMap.get(node.freq);
-//        freqKCache.delete(node.key);
-        if (freqKCache.isEmpty()) {
-            freqMap.remove(node.freq);
-        }
-        if (freqKCache.isEmpty() && node.freq == minFreq) {
+        int count = keyToCount.get(key);
+        keyToCount.put(key, count+1);
+        countToLRUKeys.get(count).remove(key);
+        if(count==minFreq && countToLRUKeys.get(count).size()==0) {
             minFreq++;
         }
-        Integer newFreq = node.freq + 1;
-        node.freq = newFreq;
-        LRUCache freqKPlusOneCache = freqMap.get(newFreq);
-        if (freqKPlusOneCache == null) {
-            freqKPlusOneCache = new LRUCache(Integer.MAX_VALUE);
-            freqMap.put(newFreq, freqKPlusOneCache);
+        if(!countToLRUKeys.containsKey(count+1)) {
+            countToLRUKeys.put(count + 1, new LinkedHashSet<>());
         }
-        freqKPlusOneCache.addNewNode(node);
+        countToLRUKeys.get(count+1).add(key);
+        return keyToVal.get(key);
     }
+
+
+    @Override
+    public String evict() {
+        String evictString = countToLRUKeys.get(minFreq).iterator().next();
+        // String evictString = (String) countToLRUKeys.get(minFreq).toArray()[countToLRUKeys.get(minFreq).size()-1];
+        return evictString;
+    }
+
+
 
     @Override
     public void putKV(String key, String value) throws StorageFullException {
-        if (!keyMap.containsKey(key)) {
-            if (keyMap.size() >= cacheSize) {
-                throw new StorageFullException();
+        if(this.cacheSize <= 0){
+            return;
+        }
+        if (keyToVal.containsKey(key)){
+            keyToVal.put(key, value);
+            try {
+                getKV(key);
+            } catch (KeyNotFoundException e) {
+                System.out.println("Error finding key");
             }
-            FreqLinkedNode node = new FreqLinkedNode(key, value);
-            incrFreq(node);
         } else {
-            FreqLinkedNode node = keyMap.get(key);
-            node.value = value;
-            incrFreq(node);
-            if (minFreq == 0) {
-                minFreq = 1;
+            if (keyToVal.size() >= this.cacheSize) {
+                String evict_key = evict();
+                countToLRUKeys.get(minFreq).remove(evict_key);
+                keyToVal.remove(evict_key);
             }
+            keyToVal.put(key, value);
+            keyToCount.put(key, 1);
+            minFreq = 1;
+            if (!countToLRUKeys.containsKey(1)) {
+                countToLRUKeys.put(1,new LinkedHashSet<>());
+            }
+            countToLRUKeys.get(1).add(key);
         }
     }
 
     @Override
     public void clearCache() {
-        this.freqMap.clear();
-        /*
-         Put dummy freq level for ease of manipulation.
-         Less code if freqLinkedNode can start with 0 freq.
-         */
-        this.freqMap.put(0, new LRUCache(1));
-        this.keyMap.clear();
-        this.minFreq = 0;
+        this.minFreq = -1;
+        this.keyToVal.clear();
+        this.keyToCount.clear();
+        this.countToLRUKeys.clear();
     }
 
     @Override
     public void delete(String key) throws KeyNotFoundException{
-        if (!keyMap.containsKey(key)) {
+        if (!keyToVal.containsKey(key)) {
             throw new KeyNotFoundException();
         }
-        FreqLinkedNode node = keyMap.get(key);
-        keyMap.remove(key);
-        LRUCache freqKCache = freqMap.get(node.freq);
-        freqKCache.delete(key);
-        if (freqKCache.isEmpty()) {
-            freqMap.remove(node.freq);
-        }
-        if (freqKCache.isEmpty() && node.freq == minFreq) {
+        keyToVal.remove(key);
+        int curFreq = keyToCount.get(key);
+        keyToCount.remove(key);
+        countToLRUKeys.get(curFreq).remove(key);
+        if(curFreq == minFreq && countToLRUKeys.get(curFreq).size() == 0) {
+            // find new minFreq
             setNextMinFreq();
         }
     }
 
-    @Override
-    public String evict() {
-        LRUCache freqKCache = freqMap.get(minFreq);
-        return freqKCache.evict();
-    }
-
     private void setNextMinFreq() {
-        Iterator<Integer> freqIter = freqMap.keySet().iterator();
+        Iterator it = keyToCount.entrySet().iterator();
         minFreq = Integer.MAX_VALUE;
-        while (freqIter.hasNext()) {
-            int freq = freqIter.next();
-            if (minFreq > freq) {
-                minFreq = freq;
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            if(minFreq > (int)pair.getValue()){
+                minFreq = (int) pair.getValue();
             }
         }
         if (minFreq == Integer.MAX_VALUE) {
-            minFreq = 0;
+            minFreq = -1;
         }
     }
 
     @Override
     public boolean isEmpty() {
-        return this.keyMap.isEmpty();
+        return this.keyToVal.isEmpty();
     }
 }
