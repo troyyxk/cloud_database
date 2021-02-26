@@ -20,6 +20,7 @@ public class KVStore implements KVCommInterface {
 	private int port;
 	private ClientConnWrapper connWrapper = null;
 	private static final int FINAL_TIMEOUT = 1_0000;
+	private String metadata;
 	/**
 	 * Initialize KVStore with address and port of KVServer
 	 * @param address the address of the KVServer
@@ -77,7 +78,10 @@ public class KVStore implements KVCommInterface {
 		CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
 		handler.sendMsg(kvMsg);
 		KVMessage res = handler.getKVMsg();
-
+		// TODO: Handle SERVER NOT RESPONSIBLE
+		if (res.getStatus().equals(KVMessage.StatusType.SERVER_NOT_RESPONSIBLE)) {
+			metadata = null;
+		}
 		return res;
 	}
 
@@ -93,6 +97,10 @@ public class KVStore implements KVCommInterface {
 		CommunicationTextMessageHandler handler = new CommunicationTextMessageHandler(this.connWrapper);
 		handler.sendMsg(kvMsg);
 		KVMessage res = handler.getKVMsg();
+		// TODO: Handle SERVER NOT RESPONSIBLE
+		if (res.getStatus().equals(KVMessage.StatusType.SERVER_NOT_RESPONSIBLE)) {
+			metadata = null;
+		}
 		return res;
 	}
 
