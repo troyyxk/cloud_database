@@ -229,4 +229,28 @@ public class LFUCacheTest extends TestCase{
         assertNull(e);
     }
 
+
+    @Test
+    public void testLRUEvictFirstIn() {
+        Exception e = null;
+        try {
+            for (int i = 0; i < cacheSize-1; i++) {
+                String key = "key" + i;
+                String value = "value" + i;
+                cache.putKV(key, value);
+            }
+            for (int i = 0; i < cacheSize-1; i++) {
+                String key = "key" + i;
+                String value = "value" + i;
+                cache.putKV(key, value);
+            }
+            cache.putKV("key6", "value6");
+            cache.putKV("key7", "value7");
+
+            assertEquals("key7", cache.evict());
+        } catch (Exception ex) {
+            e = ex;
+        }
+        assertNull(e);
+    }
 }
