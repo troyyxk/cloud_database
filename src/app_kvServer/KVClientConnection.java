@@ -53,21 +53,33 @@ public class KVClientConnection implements Runnable {
 		successMsg.setStatusType(KVMessage.StatusType.GET_SUCCESS);
 		try {
 			textComm.sendMsg(successMsg);
-			while(isOpen && serverState.isRunning()) {
+			while(isOpen) {
 				try {
 					KVMessage msg = textComm.getKVMsg();
 					KVMessageModel returnResult = new KVMessageModel();
 					/*
+						Server not running
+					 */
+					if (!serverState.isRunning()) {
+						System.out.println("Server not running");
+						String key = msg.getKey();
+						String value = msg.getValue();
+						returnResult.setKey(key);
+						returnResult.setValue(value);
+						returnResult.setStatusType(KVMessage.StatusType.SERVER_STOPPED);
+						textComm.sendMsg(returnResult);
+					}
+					/*
 						Handle GET request
 					 */
-					if (msg.getStatus().equals(KVMessage.StatusType.GET)) {
+					else if (msg.getStatus().equals(KVMessage.StatusType.GET)) {
 						String key = msg.getKey();
 						String value;
 						// TODO: check whether in this server's hash range
 						try {
 							System.out.println("get request!");
 							value = dao.getKV(key);
-							returnResult.setKey(msg.getKey());
+							returnResult.setKey(key);
 							returnResult.setValue(value);
 							returnResult.setStatusType(KVMessage.StatusType.GET_SUCCESS);
 						} catch (Exception kex) {

@@ -35,6 +35,8 @@ public interface IKVServer {
      */
     public void putKV(String key, String value) throws Exception;
 
+    public boolean initKVServer(String metadata);
+
     /**
      * Stops the KVServer, all client requests are rejected and
      * only ECS requests are processed

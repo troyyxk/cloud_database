@@ -89,8 +89,7 @@ public class KVServer implements IKVServer, Runnable{
 
 	@Override
     public void start() {
-		boolean running = initializeServer();
-		state.setRunning(running);
+		state.setRunning(true);
 
 		while(serverSocket != null) {
 			try {
@@ -150,8 +149,8 @@ public class KVServer implements IKVServer, Runnable{
 		dao.flush();
 	}
 
-	// TODO: change to initKVServer(String metadata)
-	private boolean initializeServer() {
+	@Override
+	public boolean initKVServer(String metadata) {
 		logger.info("Initialize server ...");
 		try {
 			serverSocket = new ServerSocket(port);
