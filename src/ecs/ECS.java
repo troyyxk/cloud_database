@@ -1,5 +1,6 @@
 package ecs;
 
+import app_kvECS.ECSClient;
 import org.apache.log4j.Logger;
 import shared.messages.MetaDataModel;
 import shared.messages.Metadata;
@@ -17,13 +18,15 @@ public class ECS {
     private String zHostname;
     private int zPort;
     private Metadata metaData;
-    private TreeSet<IECSNode> managedServers;
+    private TreeSet<IECSNode> managedServers = new TreeSet<>();
     private ECSzkWatcher watcher;
+    private ECSClient client;
 
-    public ECS(String zHostName, int zPort, String configFileName) {
+    public ECS(String zHostName, int zPort, String configFileName, ECSClient client) {
         loadWithFile(configFileName);
         this.metaData = new MetaDataModel();
         this.watcher = new ECSzkWatcher();
+        this.client = client;
     }
 
     private void initECSNodes(TreeSet<IECSNode> nodes) {
