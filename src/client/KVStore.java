@@ -48,7 +48,7 @@ public class KVStore implements KVCommInterface {
 			return port;
 		}
 	}
-	private final static String DEFAULT_SERVER_NAME = "server1_0";
+	private final static String DEFAULT_SERVER_NAME = "server8";
 	private final static int PROCESS_LIMIT = 100;
 	private static Logger globalLogger = Logger.getRootLogger();
 	private ExecutorService kvStoreThreadPool = Executors.newFixedThreadPool(5);

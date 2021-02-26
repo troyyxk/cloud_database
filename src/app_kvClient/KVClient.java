@@ -211,6 +211,10 @@ public class KVClient implements IKVClient {
                     printError("ERROR");
                 }
 
+                else if (respondMsg.getStatus().toString().equals(KVMessage.StatusType.SERVER_WRITE_LOCK.toString())) {
+                    printInfo("Storage server is in write lock, operation, retry put operation later");
+                }
+
                 else {
                     printError("Status unmatched for get: " + respondMsg.getStatus());
                     printError("ERROR");
