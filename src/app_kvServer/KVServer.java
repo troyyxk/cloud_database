@@ -20,6 +20,9 @@ public class KVServer implements IKVServer, Runnable{
 	private boolean running;
 	private DataAccessObject dao;
 
+	private int zkPort;
+	private String zkHostname;
+	private String serverName;
 	/**
 	 * For testing
 	 * @param port port of Server
@@ -29,6 +32,12 @@ public class KVServer implements IKVServer, Runnable{
 	public KVServer(int port, int cacheSize, String strategy) {
 		this.port = port;
 		this.dao = new DataAccessObject(cacheSize, strategy);
+	}
+
+	public void initZkListener(String zkHostname, int port, String serverName) {
+		this.zkHostname = zkHostname;
+		this.zkPort = port;
+		this.serverName = serverName;
 	}
 
 	/**
@@ -194,15 +203,27 @@ public class KVServer implements IKVServer, Runnable{
 	public static void main(String[] args) {
 		try {
 			new LogSetup("logs/KVserver.log", Level.ALL);
-			if(args.length != 3) {
-				printError("Please provide <port> <cacheSize> <strategy>");
+			if(args.length != 3 && args.length != 6) {
+				printError("Please provide <port> <cacheSize> <strategy> <zk_host>? <zk_port>? <server_name>?");
 				return;
 			}
+			if (args.length == 3) {
+				int port = Integer.parseInt(args[0]);
+				int cacheSize = Integer.parseInt(args[1]);
+				KVServer server = new KVServer(port, cacheSize, args[2]);
+				server.start();
+			}
 
-			int port = Integer.parseInt(args[0]);
-			int cacheSize = Integer.parseInt(args[1]);
-			KVServer server = new KVServer(port, cacheSize, args[2]);
-			server.start();
+			else {
+				int port = Integer.parseInt(args[0]);
+				int cacheSize = Integer.parseInt(args[1]);
+				KVServer server = new KVServer(port, cacheSize, args[2]);
+				String zkHostName = args[3];
+				int zkPort = Integer.parseInt(args[4]);
+				String agentName = args[5];
+				server.initZkListener(zkHostName, zkPort, agentName);
+				server.start();
+			}
 		} catch (IOException e) {
 			System.out.println("Error! Unable to initialize logger!");
 			e.printStackTrace();
