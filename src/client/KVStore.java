@@ -222,7 +222,7 @@ public class KVStore implements KVCommInterface {
 			}
 
 			else {
-				IECSNode n = metadata.getNode(kvToProcess.getKey());
+				IECSNode n = metadata.queryNodeByKey(kvToProcess.getKey());
 				if (n == null) {
 					n = metadata.getMetaRaw().first();
 				}

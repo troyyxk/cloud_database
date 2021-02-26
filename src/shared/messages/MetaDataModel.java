@@ -6,8 +6,10 @@ import com.google.gson.reflect.TypeToken;
 import ecs.ECSNode;
 import ecs.IECSNode;
 import org.json.JSONObject;
-
 import java.lang.reflect.Type;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -79,13 +81,45 @@ public class MetaDataModel implements Metadata {
     }
 
     @Override
-    public IECSNode getNode(String key) {
+    public IECSNode getNode(String nodeName) {
         for (IECSNode n : metaStruct) {
-            if (n.getNodeName().equals(key)) {
+            if (n.getNodeName().equals(nodeName)) {
                 return n;
             }
         }
         return null;
+    }
+
+    @Override
+    public IECSNode queryNodeByKey(String key) {
+        try {
+            String md5Key = md5Encrypt(key);
+            for (IECSNode n : metaStruct) {
+                ECSNode nN = (ECSNode) n;
+                if (nN.md5MatchMe(md5Key)) {
+                    return nN;
+                }
+            }
+        }
+
+        catch (NoSuchAlgorithmException e) {
+            System.out.println("No such algo for md5!" + e.getMessage());
+        }
+
+        return null;
+    }
+
+    private String md5Encrypt(String keyToEncrypt) throws NoSuchAlgorithmException {
+        //https://www.baeldung.com/java-md5
+        MessageDigest md5Result = MessageDigest.getInstance("MD5");
+        byte[] messageDigest = md5Result.digest(keyToEncrypt.getBytes());
+        BigInteger no = new BigInteger(1, messageDigest);
+        String hashVal = no.toString(16);
+        while (hashVal.length() < 32) {
+            hashVal = "0" + hashVal;
+        }
+
+        return hashVal.toUpperCase();
     }
 
     @Override

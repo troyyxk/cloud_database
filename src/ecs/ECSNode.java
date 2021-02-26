@@ -64,6 +64,17 @@ public class ECSNode implements IECSNode, Comparable<ECSNode> {
         this.hostName = hostName;
     }
 
+    public boolean md5MatchMe(String md5) {
+        // if equals or between the clockwise location of start and end hash
+        if (startHash.compareTo(endHash) >= 0) {
+            return md5.compareTo(startHash) >= 0 || md5.compareTo(endHash) < 0;
+        }
+
+        else {
+            return md5.compareTo(startHash) >= 0 && md5.compareTo(endHash) < 0;
+        }
+    }
+
     @Override
     public int compareTo(ECSNode o) {
         return this.endHash.compareTo(o.endHash);

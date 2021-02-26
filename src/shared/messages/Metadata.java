@@ -10,7 +10,8 @@ public interface Metadata {
     String successor(String agentName);
     String subHashRange(String agentName);
     TreeSet<IECSNode> getMetaRaw();
-    IECSNode getNode(String key);
+    IECSNode getNode(String node);
+    IECSNode queryNodeByKey(String key);
     void addNode(IECSNode node);
     IECSNode removeNode(String agentName);
     boolean isValid(); // if the metadata is valid
