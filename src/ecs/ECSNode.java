@@ -8,6 +8,16 @@ public class ECSNode implements IECSNode, Comparable<ECSNode> {
     private int port;
     private String hostName;
 
+    public String getStrategyName() {
+        return strategyName;
+    }
+
+    public void setStrategyName(String strategyName) {
+        this.strategyName = strategyName;
+    }
+
+    private String strategyName;
+
     @Override
     public String getNodeName() {
         return agentName;
