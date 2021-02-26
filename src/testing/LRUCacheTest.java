@@ -163,7 +163,7 @@ public class LRUCacheTest extends TestCase{
     }
 
     @Test
-    public void testPutToFullCacheShouldThrowException() {
+    public void testPutToFullCacheWithOneExtra() {
         Exception e = null;
         try {
             for (int i = 0; i < cacheSize; i++) {
@@ -172,10 +172,11 @@ public class LRUCacheTest extends TestCase{
                 cache.putKV(key, value);
             }
             cache.putKV("ECE419", "GPA 4.0");
+            assertEquals("key1", cache.evict());
         } catch (Exception ex) {
             e = ex;
         }
-        assertNotNull(e);
+        assertNull(e);
     }
 
 }

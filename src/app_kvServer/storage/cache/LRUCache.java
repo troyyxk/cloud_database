@@ -56,10 +56,13 @@ public class LRUCache implements ICache {
     }
 
     @Override
-    public void putKV(String key, String value) throws StorageFullException{
+    public void putKV(String key, String value) {
         if (!map.containsKey(key)) {
             if (map.size() >= cacheSize) {
-                throw new StorageFullException();
+                String evict_key = evict();
+                LinkedNode evict_node = map.get(evict_key);
+                removeNode(evict_node);
+                map.remove(evict_key);
             }
             LinkedNode node = new LinkedNode(key, value);
             addNewNode(node);
