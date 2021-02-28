@@ -34,7 +34,7 @@ public class MetaDataModel implements Metadata {
         }
 
         catch (JsonParseException e) {
-            System.out.println("Metadata format is invalid: " + e);
+            System.out.println("Metadata format is invalid: " + e.getMessage());
             this.metaExists = false;
         }
     }
