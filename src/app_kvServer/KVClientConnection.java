@@ -48,7 +48,7 @@ public class KVClientConnection implements Runnable {
 	 */
 	// TODO: Fix test cases failed due to no metadata/server name
 	private boolean isResponsible(String key) {
-		return true;
+		return false;
 //		try{
 //			Metadata metadata = serverState.getMetadataModel();
 //			IECSNode n = metadata.queryNodeByKey(key);

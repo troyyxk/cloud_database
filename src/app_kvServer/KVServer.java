@@ -179,6 +179,7 @@ public class KVServer implements IKVServer, Runnable{
 				int port = Integer.parseInt(args[0]);
 				int cacheSize = Integer.parseInt(args[1]);
 				KVServer server = new KVServer(port, cacheSize, args[2]);
+				server.initKVServer(null);
 				server.start();
 			}
 
@@ -191,6 +192,7 @@ public class KVServer implements IKVServer, Runnable{
 				String agentName = args[5];
 				// TODO: might need to initKVServer here
 				server.initZkListener(zkHostName, zkPort, agentName);
+				server.initKVServer(null);
 				server.start();
 			}
 		} catch (IOException e) {
