@@ -112,6 +112,7 @@ public class KVServer implements IKVServer, Runnable{
 		running = initializeServer();
 
 		if(serverSocket != null) {
+			logger.debug("Server running: " + isRunning());
 			while(isRunning()){
 				try {
 					Socket client = serverSocket.accept();
@@ -206,6 +207,7 @@ public class KVServer implements IKVServer, Runnable{
 				return;
 			}
 			if (args.length == 3) {
+				logger.debug("Starting server with 3 args");
 				int port = Integer.parseInt(args[0]);
 				int cacheSize = Integer.parseInt(args[1]);
 				KVServer server = new KVServer(port, cacheSize, args[2]);
